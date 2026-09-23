@@ -1,0 +1,1573 @@
+ ```html
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Gaga Korean — 음성 분석과 살아있는 대화로 배우는
+한국어 학원" />
+  <title>Gaga Korean — Speak Korean with confidence</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@
+400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap"
+rel="stylesheet" />
+
+  <style>
+    :root {
+      --ink: #202726;
+      --muted: #687370;
+      --paper: #f4f6ef;
+      --cream: #fbfbf7;
+      --line: #dce3d9;
+      --lime: #d9f56c;
+      --coral: #ff705d;
+      --blue: #c5e8ef;
+      --shadow: 0 22px 70px rgba(27, 42, 36, .12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "Manrope", "Noto Sans KR", sans-serif;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .wrap {
+      width: min(1160px, calc(100% - 48px));
+      margin: 0 auto;
+    }
+
+    .mono {
+      font: 500 11px/1 "DM Mono", monospace;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .nav {
+      height: 86px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -.06em;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 31px;
+      height: 31px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--ink);
+      color: var(--lime);
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 31px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .nav-links a {
+      color: #5b6862;
+    }
+
+    .nav-links a:hover {
+      color: var(--ink);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .lang {
+      position: relative;
+    }
+
+    .lang-button,
+    .menu-button {
+      border: 1px solid var(--line);
+      background: transparent;
+      border-radius: 999px;
+      padding: 11px 14px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .lang-button {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .lang-menu {
+      display: none;
+      position: absolute;
+      z-index: 30;
+      right: 0;
+      top: 45px;
+      min-width: 140px;
+      padding: 7px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: var(--cream);
+      box-shadow: var(--shadow);
+    }
+
+    .lang.open .lang-menu {
+      display: grid;
+    }
+
+    .lang-menu button {
+      border: 0;
+      border-radius: 9px;
+      padding: 10px;
+      background: transparent;
+      text-align: left;
+      font-size: 12px;
+    }
+
+    .lang-menu button:hover {
+      background: var(--lime);
+    }
+
+    .primary {
+      border: 0;
+      border-radius: 999px;
+      background: var(--ink);
+      color: #fff;
+      padding: 13px 19px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .primary:hover {
+      background: #384541;
+    }
+
+    .menu-button {
+      display: none;
+      padding: 10px 12px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.02fr .98fr;
+      min-height: 625px;
+      align-items: center;
+      gap: 66px;
+      padding: 65px 0 94px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 22px;
+      color: #6c7871;
+    }
+
+    .eyebrow-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--coral);
+    }
+
+    h1 {
+      max-width: 600px;
+      margin: 0;
+      font-size: clamp(48px, 6.2vw, 82px);
+      line-height: 1.04;
+      letter-spacing: -.085em;
+      font-weight: 800;
+    }
+
+    h1 em {
+      color: #73817a;
+      font-style: normal;
+    }
+
+    .hero-copy {
+      max-width: 475px;
+      margin: 27px 0 29px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.8;
+      letter-spacing: -.03em;
+    }
+
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .arrow-link {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .hero-note {
+      margin-top: 25px;
+      color: #8b9690;
+      font-size: 11px;
+    }
+
+    .hero-visual {
+      position: relative;
+      min-height: 500px;
+    }
+
+    .hero-photo {
+      position: absolute;
+      right: 10px;
+      top: 0;
+      width: 79%;
+      height: 396px;
+      overflow: hidden;
+      border-radius: 160px 160px 12px 12px;
+      background: #c3d8ca;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-photo::after {
+      position: absolute;
+      inset: 0;
+      content: "";
+      background: linear-gradient(180deg, rgba(31,44,39,.02), rgba(31,44,39,.3));
+    }
+
+    .hero-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 51% 42%;
+      filter: saturate(.78);
+    }
+
+    .vowel-card {
+      position: absolute;
+      z-index: 2;
+      left: 0;
+      bottom: 13px;
+      width: 285px;
+      padding: 21px;
+      border-radius: 19px;
+      background: var(--cream);
+      box-shadow: var(--shadow);
+    }
+
+    .vowel-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 13px;
+    }
+
+    .vowel-title {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #758178;
+      font-size: 10px;
+    }
+
+    .status i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #73c777;
+    }
+
+    .chart {
+      position: relative;
+      height: 178px;
+      overflow: hidden;
+      border-radius: 13px;
+      background: #eef1e8;
+    }
+
+    .chart::before,
+    .chart::after {
+      position: absolute;
+      content: "";
+      background: rgba(88, 104, 94, .12);
+    }
+
+    .chart::before {
+      left: 23px;
+      right: 19px;
+      top: 50%;
+      height: 1px;
+    }
+
+    .chart::after {
+      top: 18px;
+      bottom: 17px;
+      left: 50%;
+      width: 1px;
+    }
+
+    .axis-x,
+    .axis-y {
+      position: absolute;
+      color: #9da7a1;
+      font: 9px "DM Mono", monospace;
+    }
+
+    .axis-x {
+      right: 8px;
+      bottom: 5px;
+    }
+
+    .axis-y {
+      left: 6px;
+      top: 8px;
+    }
+
+    .vowel-point {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border: 3px solid var(--cream);
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px rgba(32,39,38,.15);
+    }
+
+    .vowel-point.target {
+      background: var(--coral);
+      left: 34%;
+      top: 34%;
+    }
+
+    .vowel-point.current {
+      background: var(--ink);
+      left: 62%;
+      top: 59%;
+    }
+
+    .vowel-line {
+      position: absolute;
+      left: 40%;
+      top: 42%;
+      width: 73px;
+      height: 1px;
+      background: var(--coral);
+      transform: rotate(38deg);
+      transform-origin: left;
+    }
+
+    .chart-label {
+      position: absolute;
+      color: #77827b;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .chart-label.target-label {
+      left: 21%;
+      top: 24%;
+    }
+
+    .chart-label.current-label {
+      right: 12%;
+      bottom: 22%;
+    }
+
+    .vowel-legend {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 13px;
+      color: #768079;
+      font-size: 10px;
+    }
+
+    .vowel-legend b {
+      color: var(--ink);
+    }
+
+    .sticker {
+      position: absolute;
+      right: 2px;
+      bottom: 60px;
+      display: grid;
+      width: 103px;
+      height: 103px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--lime);
+      color: #344137;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.35;
+      text-align: center;
+      transform: rotate(10deg);
+    }
+
+    .sticker::before {
+      position: absolute;
+      inset: 7px;
+      border: 1px dashed rgba(52,65,55,.4);
+      border-radius: 50%;
+      content: "";
+    }
+
+    .marquee {
+      overflow: hidden;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .marquee-inner {
+      display: flex;
+      gap: 39px;
+      width: max-content;
+      padding: 19px 0;
+      color: #6f7b74;
+      animation: slide 26s linear infinite;
+    }
+
+    .marquee-item {
+      display: flex;
+      align-items: center;
+      gap: 39px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .marquee-item::after {
+      content: "✦";
+      color: var(--coral);
+      font-size: 13px;
+    }
+
+    @keyframes slide {
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    .section {
+      padding: 120px 0;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 35px;
+      margin-bottom: 46px;
+    }
+
+    .section-kicker {
+      margin-bottom: 17px;
+      color: var(--coral);
+    }
+
+    h2 {
+      max-width: 610px;
+      margin: 0;
+      font-size: clamp(32px, 4vw, 53px);
+      line-height: 1.1;
+      letter-spacing: -.075em;
+    }
+
+    .section-desc {
+      max-width: 315px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .feature {
+      min-height: 265px;
+      padding: 27px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(251,251,247,.57);
+    }
+
+    .feature:nth-child(2) {
+      background: var(--blue);
+      border-color: transparent;
+    }
+
+    .feature:nth-child(3) {
+      background: var(--lime);
+      border-color: transparent;
+    }
+
+    .feature-number {
+      display: flex;
+      width: 33px;
+      height: 33px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 42px;
+      border-radius: 50%;
+      background: var(--cream);
+      font: 500 11px "DM Mono", monospace;
+    }
+
+    .feature h3 {
+      margin: 0 0 11px;
+      font-size: 20px;
+      letter-spacing: -.06em;
+    }
+
+    .feature p {
+      margin: 0;
+      color: #69756e;
+      font-size: 13px;
+      line-height: 1.75;
+    }
+
+    .method {
+      display: grid;
+      grid-template-columns: .87fr 1.13fr;
+      gap: 74px;
+      align-items: center;
+    }
+
+    .method-image {
+      position: relative;
+      min-height: 450px;
+    }
+
+    .method-image img {
+      width: 87%;
+      height: 420px;
+      object-fit: cover;
+      border-radius: 17px;
+      filter: saturate(.72);
+    }
+
+    .method-tag {
+      position: absolute;
+      right: 0;
+      bottom: 16px;
+      width: 184px;
+      padding: 19px;
+      border-radius: 14px;
+      background: var(--ink);
+      color: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .method-tag strong {
+      display: block;
+      margin: 10px 0 5px;
+      color: var(--lime);
+      font-size: 25px;
+      letter-spacing: -.06em;
+    }
+
+    .method-tag span {
+      color: #b8c2bc;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .steps {
+      margin-top: 32px;
+      border-top: 1px solid var(--line);
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 46px 1fr 28px;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .step-num {
+      color: var(--coral);
+      font: 500 12px "DM Mono", monospace;
+    }
+
+    .step h3 {
+      margin: 0 0 5px;
+      font-size: 16px;
+      letter-spacing: -.045em;
+    }
+
+    .step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .step-arrow {
+      color: #9ba6a0;
+      font-size: 21px;
+    }
+
+    .quote-section {
+      padding: 0 0 120px;
+    }
+
+    .quote {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      overflow: hidden;
+      min-height: 330px;
+      border-radius: 24px;
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .quote-photo {
+      min-height: 330px;
+      background:
+url("https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w
+=900&q=85") center/cover;
+      filter: saturate(.7);
+    }
+
+    .quote-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 52px;
+    }
+
+    .quote-mark {
+      color: var(--lime);
+      font-size: 43px;
+      line-height: .7;
+    }
+
+    blockquote {
+      max-width: 490px;
+      margin: 19px 0 25px;
+      font-size: clamp(24px, 3vw, 36px);
+      line-height: 1.24;
+      letter-spacing: -.07em;
+    }
+
+    .quote-author {
+      color: #abb8ae;
+      font-size: 12px;
+    }
+
+    .cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 30px;
+      padding: 71px 0 82px;
+      border-top: 1px solid var(--line);
+    }
+
+    .cta .primary {
+      padding: 16px 24px;
+      background: var(--coral);
+    }
+
+    footer {
+      padding: 25px 0 30px;
+      border-top: 1px solid var(--line);
+      color: #859089;
+      font-size: 11px;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 25px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 18px;
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 50;
+      right: 24px;
+      bottom: 24px;
+      max-width: 310px;
+      padding: 15px 18px;
+      border-radius: 13px;
+      background: var(--ink);
+      color: #fff;
+      box-shadow: var(--shadow);
+      font-size: 12px;
+      opacity: 0;
+      transform: translateY(15px);
+      pointer-events: none;
+      transition: .25s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 850px) {
+      .wrap {
+        width: min(100% - 32px, 600px);
+      }
+
+      .nav {
+        height: 74px;
+      }
+
+      .menu-button {
+        display: block;
+      }
+
+      .nav-links {
+        display: none;
+        position: absolute;
+        z-index: 20;
+        top: 67px;
+        left: 16px;
+        right: 16px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--cream);
+        box-shadow: var(--shadow);
+      }
+
+      .nav-links.open {
+        display: grid;
+        gap: 0;
+      }
+
+      .nav-links a {
+        padding: 13px 8px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .nav-actions .primary {
+        display: none;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 48px 0 78px;
+      }
+
+      h1 {
+        font-size: clamp(47px, 14vw, 74px);
+      }
+
+      .hero-visual {
+        min-height: 470px;
+        margin-top: 25px;
+      }
+
+      .hero-photo {
+        right: 0;
+        width: 78%;
+        height: 350px;
+      }
+
+      .vowel-card {
+        left: 0;
+        bottom: 0;
+        width: 275px;
+      }
+
+      .sticker {
+        right: -5px;
+        bottom: 36px;
+      }
+
+      .section {
+        padding: 80px 0;
+      }
+
+      .section-head {
+        display: block;
+      }
+
+      .section-desc {
+        margin-top: 18px;
+      }
+
+      .features,
+      .method,
+      .quote {
+        grid-template-columns: 1fr;
+      }
+
+      .feature {
+        min-height: 218px;
+      }
+
+      .feature-number {
+        margin-bottom: 28px;
+      }
+
+      .method-image {
+        min-height: 370px;
+        margin-bottom: 10px;
+      }
+
+      .method-image img {
+        width: 84%;
+        height: 350px;
+      }
+
+      .quote-photo {
+        min-height: 230px;
+      }
+
+      .quote-content {
+        padding: 38px 28px 43px;
+      }
+
+      .quote-section {
+        padding-bottom: 80px;
+      }
+
+      .cta {
+        display: block;
+        padding: 55px 0 63px;
+      }
+
+      .cta .primary {
+        margin-top: 27px;
+      }
+
+      .footer-inner {
+        display: block;
+      }
+
+      .footer-links {
+        margin-top: 14px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .hero-cta {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero-visual {
+        min-height: 410px;
+      }
+
+      .hero-photo {
+        height: 302px;
+      }
+
+      .vowel-card {
+        width: 244px;
+        padding: 17px;
+      }
+
+      .chart {
+        height: 150px;
+      }
+
+      .sticker {
+        width: 84px;
+        height: 84px;
+        font-size: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="wrap nav">
+    <a href="#top" class="brand" aria-label="Gaga Korean home">
+      <span class="brand-mark">ㄱ</span>
+      <span>gaga korean</span>
+    </a>
+
+    <nav class="nav-links" id="navLinks">
+      <a href="#method" data-i18n="navMethod">학습 방법</a>
+      <a href="#program" data-i18n="navProgram">프로그램</a>
+      <a href="#story" data-i18n="navStory">학습자 이야기</a>
+    </nav>
+
+    <div class="nav-actions">
+      <div class="lang" id="langPicker">
+        <button class="lang-button" id="langButton" aria-expanded="false">
+          <span id="currentLang">한국어</span>
+          <span>⌄</span>
+        </button>
+
+        <div class="lang-menu">
+          <button data-lang="ko">한국어</button>
+          <button data-lang="en">English</button>
+          <button data-lang="ru">Русский</button>
+          <button data-lang="uk">Українська</button>
+          <button data-lang="vi">Tiếng Việt</button>
+          <button data-lang="ja">日本語</button>
+          <button data-lang="zh">中文</button>
+        </div>
+      </div>
+
+      <a class="primary" href="#contact" data-i18n="navCta">상담 신청</a>
+      <button class="menu-button" id="menuButton">☰</button>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="wrap hero">
+      <div>
+        <div class="eyebrow mono">
+          <span class="eyebrow-dot"></span>
+          <span>Korean, in your voice</span>
+        </div>
+
+        <h1 data-i18n="heroTitle">
+          말하고,<br />
+          <em>느끼고,</em><br />
+          한국어답게.
+        </h1>
+
+        <p class="hero-copy" data-i18n="heroCopy">
+          Gaga Korean은 살아있는 대화와 음성 분석으로,
+          더 자연스럽게 말하는 법을 함께 찾습니다.
+        </p>
+
+        <div class="hero-cta">
+          <a class="primary" href="#contact" data-i18n="heroCta">
+            나에게 맞는 수업 찾기
+          </a>
+
+          <a class="arrow-link" href="#method">
+            <span data-i18n="heroLink">학습 방법 보기</span>
+            <span>↗</span>
+          </a>
+        </div>
+
+        <p class="hero-note mono">
+          1:1 · small group · online / offline
+        </p>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-photo">
+          <img
+
+src="https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w
+=1000&q=85"
+            alt="Students learning together"
+          />
+        </div>
+
+        <div class="vowel-card">
+          <div class="vowel-card-head">
+            <span class="vowel-title" data-i18n="chartTitle">
+              나의 모음 공간
+            </span>
+
+            <span class="status">
+              <i></i>
+              <span data-i18n="live">분석 중</span>
+            </span>
+          </div>
+
+          <div class="chart">
+            <span class="axis-x">F2 →</span>
+            <span class="axis-y">F1 ↑</span>
+            <span class="vowel-line"></span>
+            <span class="vowel-point target"></span>
+            <span class="vowel-point current"></span>
+            <span class="chart-label target-label">target</span>
+            <span class="chart-label current-label">you</span>
+          </div>
+
+          <div class="vowel-legend">
+            <span>● target</span>
+            <span>● <span data-i18n="yourVoice">your voice</span></span>
+          </div>
+        </div>
+
+        <div class="sticker" data-i18n="sticker">
+          오늘의<br />
+          작은 변화<br />
+          ✦
+        </div>
+      </div>
+    </section>
+
+    <div class="marquee">
+      <div class="marquee-inner">
+        <div class="marquee-item">SPEAK WITH CONFIDENCE</div>
+        <div class="marquee-item">소리로 발견하는 한국어</div>
+        <div class="marquee-item">LEARN YOUR WAY</div>
+        <div class="marquee-item">매일 한 걸음 더</div>
+      </div>
+    </div>
+
+    <section class="wrap section" id="program">
+      <div class="section-head">
+        <div>
+          <div class="section-kicker mono">Why Gaga Korean</div>
+          <h2 data-i18n="programTitle">
+            한국어를 ‘공부’하는 데서<br />
+            ‘사용’하는 사람으로.
+          </h2>
+        </div>
+
+        <p class="section-desc" data-i18n="programDesc">
+          목표와 목소리가 모두 다른 만큼,
+          시작점도 달라야 하니까요.
+        </p>
+      </div>
+
+      <div class="features">
+        <article class="feature">
+          <div class="feature-number">01</div>
+          <h3 data-i18n="feature1Title">말할 이유가 있는 수업</h3>
+          <p data-i18n="feature1Copy">
+            교과서 문장보다 오늘의 나에게 필요한 대화부터 시작합니다.
+          </p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-number">02</div>
+          <h3 data-i18n="feature2Title">내 목소리를 보는 피드백</h3>
+          <p data-i18n="feature2Copy">
+            STT와 F1·F2 분석으로 발음의 방향을 눈으로 확인합니다.
+          </p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-number">03</div>
+          <h3 data-i18n="feature3Title">작지만 확실한 루틴</h3>
+          <p data-i18n="feature3Copy">
+            짧게, 자주, 즐겁게. 배운 표현이 내 것이 될 때까지.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap section" id="method">
+      <div class="method">
+        <div class="method-image">
+          <img
+
+src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=90
+0&q=85"
+            alt="Korean language lesson"
+          />
+
+          <div class="method-tag">
+            <span class="mono">our approach</span>
+            <strong>voice first.</strong>
+            <span data-i18n="tagCopy">
+              정답보다, 나의 소리를 먼저 들어요.
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-kicker mono">The way we teach</div>
+
+          <h2 data-i18n="methodTitle">
+            듣고, 말하고,<br />
+            다시 나아지는 과정.
+          </h2>
+
+          <div class="steps">
+            <div class="step">
+              <span class="step-num">01</span>
+              <div>
+                <h3 data-i18n="step1Title">나의 목표를 발견해요</h3>
+                <p data-i18n="step1Copy">
+                  레벨과 생활, 좋아하는 것에서 수업을 디자인합니다.
+                </p>
+              </div>
+              <span class="step-arrow">↗</span>
+            </div>
+
+            <div class="step">
+              <span class="step-num">02</span>
+              <div>
+                <h3 data-i18n="step2Title">내 목소리를 확인해요</h3>
+                <p data-i18n="step2Copy">
+                  모음 공간과 발음 피드백으로 변화의 방향을 봅니다.
+                </p>
+              </div>
+              <span class="step-arrow">↗</span>
+            </div>
+
+            <div class="step">
+              <span class="step-num">03</span>
+              <div>
+                <h3 data-i18n="step3Title">진짜 상황에서 써봐요</h3>
+                <p data-i18n="step3Copy">
+                  수업 밖에서도 이어지는 짧고 선명한 미션을 드립니다.
+                </p>
+              </div>
+              <span class="step-arrow">↗</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap quote-section" id="story">
+      <div class="quote">
+        <div
+          class="quote-photo"
+          role="img"
+          aria-label="Learner in Seoul"
+        ></div>
+
+        <div class="quote-content">
+          <span class="quote-mark">“</span>
+
+          <blockquote data-i18n="quote">
+            처음으로 제 발음이 틀린 게 아니라,
+            어디로 가야 하는지 보였어요.
+          </blockquote>
+
+          <span class="quote-author" data-i18n="quoteAuthor">
+            — LÉA, 프랑스 · 초급 회화
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap cta" id="contact">
+      <h2 data-i18n="ctaTitle">
+        당신의 한국어,<br />
+        어디서 시작할까요?
+      </h2>
+
+      <button class="primary" id="consultButton" data-i18n="ctaButton">
+        무료 레벨 상담 신청 ↗
+      </button>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span>© 2024 Gaga Korean. Speak your way.</span>
+
+      <div class="footer-links">
+        <a href="#contact">Instagram</a>
+        <a href="#contact">Contact</a>
+        <a href="#contact">Privacy</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const translations = {
+      ko: {
+        name: "한국어",
+        navMethod: "학습 방법",
+        navProgram: "프로그램",
+        navStory: "학습자 이야기",
+        navCta: "상담 신청",
+        heroTitle: "말하고,<br><em>느끼고,</em><br>한국어답게.",
+        heroCopy: "Gaga Korean은 살아있는 대화와 음성 분석으로, 더 자연스럽게 말하는
+법을 함께 찾습니다.",
+        heroCta: "나에게 맞는 수업 찾기",
+        heroLink: "학습 방법 보기",
+        chartTitle: "나의 모음 공간",
+        live: "분석 중",
+        yourVoice: "your voice",
+        sticker: "오늘의<br>작은 변화<br>✦",
+        programTitle: "한국어를 ‘공부’하는 데서<br>‘사용’하는 사람으로.",
+        programDesc: "목표와 목소리가 모두 다른 만큼, 시작점도 달라야 하니까요.",
+        feature1Title: "말할 이유가 있는 수업",
+        feature1Copy: "교과서 문장보다 오늘의 나에게 필요한 대화부터 시작합니다.",
+        feature2Title: "내 목소리를 보는 피드백",
+        feature2Copy: "STT와 F1·F2 분석으로 발음의 방향을 눈으로 확인합니다.",
+        feature3Title: "작지만 확실한 루틴",
+        feature3Copy: "짧게, 자주, 즐겁게. 배운 표현이 내 것이 될 때까지.",
+        tagCopy: "정답보다, 나의 소리를 먼저 들어요.",
+        methodTitle: "듣고, 말하고,<br>다시 나아지는 과정.",
+        step1Title: "나의 목표를 발견해요",
+        step1Copy: "레벨과 생활, 좋아하는 것에서 수업을 디자인합니다.",
+        step2Title: "내 목소리를 확인해요",
+        step2Copy: "모음 공간과 발음 피드백으로 변화의 방향을 봅니다.",
+        step3Title: "진짜 상황에서 써봐요",
+        step3Copy: "수업 밖에서도 이어지는 짧고 선명한 미션을 드립니다.",
+        quote: "처음으로 제 발음이 틀린 게 아니라, 어디로 가야 하는지 보였어요.",
+        quoteAuthor: "— LÉA, 프랑스 · 초급 회화",
+        ctaTitle: "당신의 한국어,<br>어디서 시작할까요?",
+        ctaButton: "무료 레벨 상담 신청 ↗",
+        toast: "상담 신청을 준비하고 있어요. 곧 연락드릴게요."
+      },
+
+      en: {
+        name: "English",
+        navMethod: "Our method",
+        navProgram: "Programs",
+        navStory: "Learner story",
+        navCta: "Talk to us",
+        heroTitle: "Speak,<br><em>feel,</em><br>Korean.",
+        heroCopy: "Gaga Korean helps you find a more natural Korean voice through real
+conversation and sound-based feedback.",
+        heroCta: "Find my class",
+        heroLink: "See how we teach",
+        chartTitle: "My vowel space",
+        live: "analyzing",
+        yourVoice: "your voice",
+        sticker: "one small<br>change today<br>✦",
+        programTitle: "Go from studying<br>Korean to using it.",
+        programDesc: "Your goal and your voice are unique. Your starting point should be
+too.",
+        feature1Title: "A reason to speak",
+        feature1Copy: "We begin with the conversations you need today, not textbook
+sentences.",
+        feature2Title: "See your voice",
+        feature2Copy: "STT and F1·F2 analysis make your pronunciation direction
+visible.",
+        feature3Title: "A small, sure routine",
+        feature3Copy: "Short, frequent, joyful practice until the words become yours.",
+        tagCopy: "Listen to your voice before chasing the answer.",
+        methodTitle: "Listen, speak,<br>move forward.",
+        step1Title: "Find your goal",
+        step1Copy: "We design lessons around your level, life, and interests.",
+        step2Title: "See your voice",
+        step2Copy: "Track your direction with vowel space and clear feedback.",
+        step3Title: "Use it for real",
+        step3Copy: "Take short, vivid missions beyond the classroom.",
+        quote: "For the first time, I could see where to go—not just that my
+pronunciation was wrong.",
+        quoteAuthor: "— LÉA, France · Beginner conversation",
+        ctaTitle: "Where will<br>your Korean begin?",
+        ctaButton: "Book a free level chat ↗",
+        toast: "We are getting your consultation ready. Talk soon."
+      },
+
+      ru: {
+        name: "Русский",
+        navMethod: "Метод обучения",
+        navProgram: "Программы",
+        navStory: "История ученика",
+        navCta: "Связаться с нами",
+        heroTitle: "Говори,<br><em>чувствуй,</em><br>по-корейски.",
+        heroCopy: "Gaga Korean помогает найти естественный корейский голос через живой
+разговор и звуковую обратную связь.",
+        heroCta: "Найти свой курс",
+        heroLink: "Узнать о методе",
+        chartTitle: "Моё пространство гласных",
+        live: "анализ",
+        yourVoice: "ваш голос",
+        sticker: "одно маленькое<br>изменение сегодня<br>✦",
+        programTitle: "От изучения корейского<br>к его настоящему использованию.",
+        programDesc: "У каждого своя цель и свой голос. Значит, и начало должно быть
+своим.",
+        feature1Title: "Причина говорить",
+        feature1Copy: "Начинаем с разговоров, которые нужны вам сегодня, а не с фраз из
+учебника.",
+        feature2Title: "Увидеть свой голос",
+        feature2Copy: "Анализ STT и F1·F2 показывает направление изменения
+произношения.",
+        feature3Title: "Небольшая привычка",
+        feature3Copy: "Короткая, регулярная и приятная практика, пока слова не станут
+вашими.",
+        tagCopy: "Сначала услышьте свой голос, а потом ищите идеальный ответ.",
+        methodTitle: "Слушай, говори,<br>двигайся вперёд.",
+        step1Title: "Найти свою цель",
+        step1Copy: "Мы строим уроки вокруг вашего уровня, жизни и интересов.",
+        step2Title: "Увидеть свой голос",
+        step2Copy: "Следим за направлением с помощью пространства гласных и понятной
+обратной связи.",
+        step3Title: "Использовать в жизни",
+        step3Copy: "Небольшие и ясные задания выходят за пределы класса.",
+        quote: "Впервые я увидела не только ошибку, но и направление, в котором нужно
+двигаться.",
+        quoteAuthor: "— LÉA, Франция · Начальный разговорный курс",
+        ctaTitle: "С чего начнётся<br>ваш корейский?",
+        ctaButton: "Бесплатная консультация ↗",
+        toast: "Мы готовим вашу консультацию. Скоро свяжемся."
+      },
+
+      uk: {
+        name: "Українська",
+        navMethod: "Наш метод",
+        navProgram: "Програми",
+        navStory: "Історія учня",
+        navCta: "Зв’язатися з нами",
+        heroTitle: "Говори,<br><em>відчувай,</em><br>корейською.",
+        heroCopy: "Gaga Korean допомагає знайти природний корейський голос через живе
+спілкування та звуковий зворотний зв’язок.",
+        heroCta: "Знайти свій курс",
+        heroLink: "Дізнатися про метод",
+        chartTitle: "Мій простір голосних",
+        live: "аналіз",
+        yourVoice: "ваш голос",
+        sticker: "одна маленька<br>зміна сьогодні<br>✦",
+        programTitle: "Від вивчення корейської<br>до справжнього використання.",
+        programDesc: "У кожного своя мета й свій голос. Тож і початок має бути
+власним.",
+        feature1Title: "Причина говорити",
+        feature1Copy: "Починаємо з розмов, які потрібні вам сьогодні, а не з фраз
+підручника.",
+        feature2Title: "Побачити свій голос",
+        feature2Copy: "Аналіз STT і F1·F2 показує напрямок покращення вимови.",
+        feature3Title: "Невелика звичка",
+        feature3Copy: "Коротка, регулярна й приємна практика, доки слова не стануть
+вашими.",
+        tagCopy: "Спочатку почуйте свій голос, а вже потім шукайте ідеальну відповідь.",
+        methodTitle: "Слухай, говори,<br>рухайся вперед.",
+        step1Title: "Знайти свою мету",
+        step1Copy: "Ми будуємо уроки навколо вашого рівня, життя та інтересів.",
+        step2Title: "Побачити свій голос",
+        step2Copy: "Відстежуємо напрямок за допомогою простору голосних і зрозумілого
+відгуку.",
+        step3Title: "Використовувати в житті",
+        step3Copy: "Невеликі та чіткі завдання виходять за межі класу.",
+        quote: "Уперше я побачила не лише помилку, а й напрямок, у якому потрібно
+рухатися.",
+        quoteAuthor: "— LÉA, Франція · Початковий розмовний курс",
+        ctaTitle: "З чого почнеться<br>ваша корейська?",
+        ctaButton: "Безкоштовна консультація ↗",
+        toast: "Ми готуємо вашу консультацію. Скоро зв’яжемося."
+      },
+
+      vi: {
+        name: "Tiếng Việt",
+        navMethod: "Phương pháp học",
+        navProgram: "Chương trình",
+        navStory: "Câu chuyện học viên",
+        navCta: "Liên hệ",
+        heroTitle: "Nói,<br><em>cảm nhận,</em><br>tiếng Hàn.",
+        heroCopy: "Gaga Korean giúp bạn tìm ra giọng tiếng Hàn tự nhiên hơn qua hội
+thoại thực tế và phản hồi âm thanh.",
+        heroCta: "Tìm lớp học phù hợp",
+        heroLink: "Xem phương pháp học",
+        chartTitle: "Không gian nguyên âm của tôi",
+        live: "đang phân tích",
+        yourVoice: "giọng của bạn",
+        sticker: "một thay đổi<br>nhỏ hôm nay<br>✦",
+        programTitle: "Từ học tiếng Hàn<br>đến sử dụng thật sự.",
+        programDesc: "Mục tiêu và giọng nói của mỗi người đều khác nhau, nên điểm bắt
+đầu cũng vậy.",
+        feature1Title: "Một lý do để nói",
+        feature1Copy: "Bắt đầu bằng những cuộc trò chuyện bạn cần hôm nay, không chỉ
+bằng câu trong giáo trình.",
+        feature2Title: "Nhìn thấy giọng nói",
+        feature2Copy: "Phân tích STT và F1·F2 giúp bạn nhìn thấy hướng điều chỉnh phát
+âm.",
+        feature3Title: "Thói quen nhỏ, chắc chắn",
+        feature3Copy: "Luyện tập ngắn, thường xuyên và vui vẻ cho đến khi câu nói trở
+thành của bạn.",
+        tagCopy: "Hãy lắng nghe giọng của mình trước khi tìm câu trả lời hoàn hảo.",
+        methodTitle: "Lắng nghe, nói,<br>tiến bộ từng bước.",
+        step1Title: "Tìm mục tiêu của bạn",
+        step1Copy: "Chúng tôi thiết kế bài học theo trình độ, cuộc sống và sở thích của
+bạn.",
+        step2Title: "Kiểm tra giọng nói",
+        step2Copy: "Theo dõi hướng thay đổi qua không gian nguyên âm và phản hồi rõ
+ràng.",
+        step3Title: "Dùng trong đời thật",
+        step3Copy: "Mang những nhiệm vụ ngắn và rõ ràng ra ngoài lớp học.",
+        quote: "Lần đầu tiên tôi nhìn thấy mình nên đi về đâu, chứ không chỉ biết phát
+âm của mình sai.",
+        quoteAuthor: "— LÉA, Pháp · Hội thoại sơ cấp",
+        ctaTitle: "Tiếng Hàn của bạn<br>sẽ bắt đầu từ đâu?",
+        ctaButton: "Đăng ký tư vấn miễn phí ↗",
+        toast: "Chúng tôi đang chuẩn bị tư vấn. Hẹn gặp bạn sớm."
+      },
+
+      ja: {
+        name: "日本語",
+        navMethod: "学び方",
+        navProgram: "プログラム",
+        navStory: "受講生の声",
+        navCta: "相談する",
+        heroTitle: "話して、<br><em>感じて、</em><br>韓国語らしく。",
+        heroCopy: "Gaga
+Koreanはリアルな会話と音声分析で、より自然に話す方法を一緒に見つけます。",
+        heroCta: "自分に合う授業を探す",
+        heroLink: "学び方を見る",
+        chartTitle: "私の母音スペース",
+        live: "分析中",
+        yourVoice: "あなたの声",
+        sticker: "今日の<br>小さな変化<br>✦",
+        programTitle: "韓国語を学ぶ人から<br>使う人へ。",
+        programDesc: "目標も声も一人ひとり違うから、始め方も違います。",
+        feature1Title: "話す理由がある授業",
+        feature1Copy: "教科書より、今日のあなたに必要な会話から始めます。",
+        feature2Title: "声が見えるフィードバック",
+        feature2Copy: "STTとF1・F2分析で発音の方向を目で確認します。",
+        feature3Title: "小さく確かな習慣",
+        feature3Copy: "短く、楽しく、繰り返して自分の表現にします。",
+        tagCopy: "答えより先に、自分の声を聴きます。",
+        methodTitle: "聴いて、話して、<br>また前へ。",
+        step1Title: "目標を見つける",
+        step1Copy: "レベルと生活、好きなことから授業をデザインします。",
+        step2Title: "声を確認する",
+        step2Copy: "母音スペースと発音フィードバックで変化を見ます。",
+        step3Title: "リアルに使う",
+        step3Copy: "教室の外でも続く短いミッションを届けます。",
+        quote: "発音が間違っているだけでなく、どこへ進めばいいか初めて見えました。",
+        quoteAuthor: "— LÉA, フランス · 初級会話",
+        ctaTitle: "あなたの韓国語、<br>どこから始めますか？",
+        ctaButton: "無料レベル相談 ↗",
+        toast: "相談を準備しています。すぐにご連絡します。"
+      },
+
+      zh: {
+        name: "中文",
+        navMethod: "学习方式",
+        navProgram: "课程",
+        navStory: "学员故事",
+        navCta: "咨询我们",
+        heroTitle: "开口说，<br><em>用心感受，</em><br>说出韩语。",
+        heroCopy: "Gaga Korean通过真实对话和声音分析，陪你找到更自然的韩语表达。",
+        heroCta: "找到适合我的课程",
+        heroLink: "了解学习方式",
+        chartTitle: "我的元音空间",
+        live: "分析中",
+        yourVoice: "你的声音",
+        sticker: "今天的<br>小小改变<br>✦",
+        programTitle: "从学习韩语，<br>到真正使用韩语。",
+        programDesc: "目标和声音各不相同，起点也应该不同。",
+        feature1Title: "有理由开口的课堂",
+        feature1Copy: "从今天真正需要的对话开始，而不是课本句子。",
+        feature2Title: "看见自己的声音",
+        feature2Copy: "用STT和F1·F2分析，看见发音调整的方向。",
+        feature3Title: "小而确定的习惯",
+        feature3Copy: "短一点、频繁一点、快乐一点，直到表达变成自己的。",
+        tagCopy: "比起标准答案，先听见自己的声音。",
+        methodTitle: "听见、开口、<br>再次进步。",
+        step1Title: "找到自己的目标",
+        step1Copy: "从水平、生活和兴趣出发设计课程。",
+        step2Title: "确认自己的声音",
+        step2Copy: "通过元音空间和反馈看见进步方向。",
+        step3Title: "在真实情境中使用",
+        step3Copy: "把简短而清晰的任务带到课堂之外。",
+        quote: "第一次，我看到的不是“发音错了”，而是应该往哪里走。",
+        quoteAuthor: "— LÉA，法国 · 初级会话",
+        ctaTitle: "你的韩语，<br>想从哪里开始？",
+        ctaButton: "预约免费水平咨询 ↗",
+        toast: "正在准备咨询申请。"
+      }
+    };
+
+    const langPicker = document.getElementById("langPicker");
+    const langButton = document.getElementById("langButton");
+    const currentLang = document.getElementById("currentLang");
+    const navLinks = document.getElementById("navLinks");
+    const menuButton = document.getElementById("menuButton");
+    const toast = document.getElementById("toast");
+
+    function setLanguage(lang) {
+      const selectedLanguage = translations[lang] ? lang : "ko";
+      const copy = translations[selectedLanguage];
+
+      document.documentElement.lang = selectedLanguage;
+      currentLang.textContent = copy.name;
+
+      document.querySelectorAll("[data-i18n]").forEach((element) => {
+        const key = element.dataset.i18n;
+        if (copy[key]) {
+          element.innerHTML = copy[key];
+        }
+      });
+
+      langPicker.classList.remove("open");
+      langButton.setAttribute("aria-expanded", "false");
+      localStorage.setItem("gaga-language", selectedLanguage);
+    }
+
+    langButton.addEventListener("click", () => {
+      const isOpen = langPicker.classList.toggle("open");
+      langButton.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    document.querySelectorAll("[data-lang]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setLanguage(button.dataset.lang);
+      });
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!langPicker.contains(event.target)) {
+        langPicker.classList.remove("open");
+        langButton.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    menuButton.addEventListener("click", () => {
+      navLinks.classList.toggle("open");
+    });
+
+    navLinks.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        navLinks.classList.remove("open");
+      });
+    });
+
+    document.getElementById("consultButton").addEventListener("click", () => {
+      const current = document.documentElement.lang || "ko";
+      toast.textContent = translations[current].toast;
+      toast.classList.add("show");
+
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 3400);
+    });
+
+    setLanguage(localStorage.getItem("gaga-language") || "ko");
+  </script>
+</body>
+</html>
