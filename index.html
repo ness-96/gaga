@@ -312,7 +312,7 @@
           <div class="feedback-metrics"><span>F1 <b id="f1Value">분석 대기</b></span><span>F2 <b id="f2Value">분석 대기</b></span><span>F3 <b id="f3Value">분석 대기</b></span></div>
           <div class="target-reference" id="targetReference">남성 · ㅓ 중심 F1 480–563 / F2 822–985 / F3 2561–2836 Hz</div>
           <button class="record-button" id="recordButton" disabled>완료 · 분석하기</button>
-          <div class="practice-note">녹음이 끝나면 완료를 눌러 중심 범위와 로컬 STT를 함께 분석합니다.</div>
+          <div class="practice-note">녹음이 끝나면 로컬 STT를 주판정으로 사용하고, 인식이 불확실하거나 다른 모음이면 F1·F2·F3로 발음 방향을 안내합니다.</div>
           <div class="practice-note" id="analysisProgress">같은 모음을 3회 녹음하면 더 안정적인 평균 결과를 보여줍니다. 현재 0/3회.</div>
         </div>
       </div>
@@ -568,11 +568,6 @@
         }
         const samples = analysisSamples;
         const mean = key => samples.reduce((sum, sample) => sum + sample[key], 0) / samples.length;
-        const finiteMean = key => {
-          const values = samples.map(sample => sample[key]).filter(Number.isFinite);
-          return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
-        };
-        const spread = key => Math.max(...samples.map(sample => sample[key])) - Math.min(...samples.map(sample => sample[key]));
         const displayed = samples.length >= 3
           ? { f1: Math.round(mean('f1')), f2: Math.round(mean('f2')), f3: Math.round(mean('f3')) }
           : result;
@@ -601,39 +596,31 @@
         if (result.closest_vowel && result.closest_vowel !== targetVowel) {
           feedback.push(`음향상 ${result.closest_vowel}에 더 가까워요.`);
         }
-        if (result.recognized_vowel && result.recognized_vowel !== targetVowel) {
-          feedback.push(`로컬 STT도 ${result.recognized_vowel}에 더 가깝게 인식했어요.`);
-        }
-        const softPass = within(f1, softRange('f1')) && within(f2, softRange('f2'));
-        const averageTargetDistance = finiteMean('target_distance');
-        const averageAlternateDistance = finiteMean('alternate_distance');
-        const relativePass = averageTargetDistance != null &&
-          averageAlternateDistance != null &&
-          averageTargetDistance < averageAlternateDistance &&
-          averageTargetDistance <= 2.5;
-        const targetClosestCount = samples.filter(sample => sample.closest_vowel === targetVowel).length;
-        const sttTargetCount = samples.filter(sample => !sample.recognized_vowel || sample.recognized_vowel === targetVowel).length;
-        const stable = samples.length < 3 || (spread('f1') <= 120 && spread('f2') <= 220);
-        const scoreSamples = samples.map(sample => sample.combined_score).filter(Number.isFinite);
-        const summaryScore = scoreSamples.length
-          ? Math.round(scoreSamples.reduce((sum, score) => sum + score, 0) / scoreSamples.length)
+        const sttTargetCount = samples.filter(sample => sample.recognized_vowel === targetVowel).length;
+        const sttMismatchCount = samples.filter(sample => sample.recognized_vowel && sample.recognized_vowel !== targetVowel).length;
+        const sttKnownCount = sttTargetCount + sttMismatchCount;
+        const sttConfirmed = samples.length >= 3
+          ? sttTargetCount >= 2
+          : sttTargetCount > sttMismatchCount && sttKnownCount >= Math.ceil(samples.length / 2);
+        const sttScoreSamples = samples.map(sample => sample.stt_score).filter(Number.isFinite);
+        const sttSummaryScore = sttScoreSamples.length
+          ? Math.round(sttScoreSamples.reduce((sum, score) => sum + score, 0) / sttScoreSamples.length)
           : null;
-        const scoreText = Number.isFinite(summaryScore) ? ` 종합 ${summaryScore}점.` : '';
-        const successMessage = targetVowel === 'ㅗ'
-          ? `좋아요! 3회 평균이 ㅗ 쪽 상대거리에서 안정적이에요.${scoreText}`
-          : `좋아요! 3회 평균이 ㅓ 쪽 상대거리에서 안정적이에요.${scoreText}`;
+        const scoreText = Number.isFinite(sttSummaryScore) ? ` STT 평균 ${sttSummaryScore}점.` : '';
+        const formantFeedback = feedback.join(' ') || 'F1·F2·F3를 안정적으로 측정하지 못했어요.';
+        const sttFailureMessage = sttMismatchCount > sttTargetCount
+          ? `STT가 ${result.recognized_vowel || '다른 모음'}으로 인식했어요.`
+          : 'STT가 목표 모음을 충분히 확인하지 못했어요.';
         if (samples.length < 3) {
-          feedbackText.textContent = `${feedback.join(' ') || '현재 측정은 안정적입니다.'} 같은 모음을 ${3 - samples.length}회 더 녹음해 주세요.`;
-        } else if (relativePass && stable && targetClosestCount >= 2 && sttTargetCount >= 2 && summaryScore >= 75) {
-          feedbackText.textContent = successMessage;
-        } else if (relativePass && stable && targetClosestCount >= 2 && summaryScore >= 55) {
-          feedbackText.textContent = `${feedback.join(' ') || '거의 맞아요. 목표 모음 쪽 상대거리를 더 좁혀 보세요.'} 3회 평균 기준입니다.${scoreText}`;
-        } else if (targetClosestCount < 2) {
-          feedbackText.textContent = `${feedback.join(' ') || `3회 중 ${targetClosestCount}회만 ${targetVowel}에 가까웠어요.`} 같은 모음을 다시 3회 녹음해 보세요.${scoreText}`;
-        } else if (!stable) {
-          feedbackText.textContent = `발음 편차가 커요. 같은 크기와 길이로 3회 다시 녹음해 보세요.${scoreText}`;
+          if (sttConfirmed) {
+            feedbackText.textContent = `STT가 목표 모음 /${targetVowel}/로 인식했어요.${scoreText} 같은 모음을 ${3 - samples.length}회 더 녹음해 주세요.`;
+          } else {
+            feedbackText.textContent = `${sttFailureMessage} ${formantFeedback} 같은 모음을 ${3 - samples.length}회 더 녹음해 주세요.`;
+          }
+        } else if (sttConfirmed) {
+          feedbackText.textContent = `좋아요! STT가 3회 중 ${sttTargetCount}회를 목표 모음 /${targetVowel}/로 인식했어요.${scoreText} F1·F2·F3는 보조 피드백으로만 사용했습니다.`;
         } else {
-          feedbackText.textContent = `${feedback.join(' ') || '목표 모음에서 조금 벗어났어요.'} 3회 평균 기준입니다.${scoreText}`;
+          feedbackText.textContent = `${sttFailureMessage} ${formantFeedback} 같은 모음을 다시 3회 녹음해 보세요.${scoreText}`;
         }
       } catch (error) {
         feedbackText.textContent = error.message === 'poor-audio-quality'

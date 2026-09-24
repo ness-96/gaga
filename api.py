@@ -141,17 +141,21 @@ def _formant_assessment(measured: dict[str, int], profile: str, target: str) -> 
 
 
 def _combine_scores(acoustic_score: int | None, stt_score: int | None) -> dict[str, object]:
-    weighted_scores = []
-    if acoustic_score is not None:
-        weighted_scores.append((acoustic_score, 0.65))
     if stt_score is not None:
-        weighted_scores.append((stt_score, 0.35))
-    if not weighted_scores:
-        return {"combined_score": None, "verdict": "unavailable"}
-    total_weight = sum(weight for _, weight in weighted_scores)
-    combined = round(sum(score * weight for score, weight in weighted_scores) / total_weight)
-    verdict = "good" if combined >= 75 else "near" if combined >= 55 else "needs-work"
-    return {"combined_score": combined, "verdict": verdict}
+        verdict = "good" if stt_score >= 75 else "near" if stt_score >= 55 else "needs-work"
+        return {
+            "combined_score": stt_score,
+            "verdict": verdict,
+            "primary_signal": "stt",
+        }
+    if acoustic_score is None:
+        return {"combined_score": None, "verdict": "unavailable", "primary_signal": None}
+    verdict = "good" if acoustic_score >= 75 else "near" if acoustic_score >= 55 else "needs-work"
+    return {
+        "combined_score": acoustic_score,
+        "verdict": verdict,
+        "primary_signal": "acoustic-fallback",
+    }
 
 
 @app.get("/health")
