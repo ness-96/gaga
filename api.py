@@ -36,7 +36,7 @@ FORMANT_REFERENCE = {
 app = FastAPI(title="Gaga Korean Praat + Vosk API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https://gaga-korean(?:-[a-z0-9]+)?-eungdi\.vercel\.app|https://gaga-korean\.vercel\.app|http://127\.0\.0\.1(?::\d+)?|http://localhost(?::\d+)?",
+    allow_origin_regex=r"https://gaga-korean(?:-[a-z0-9]+)?-eungdi\.vercel\.app|https://gaga-korean\.vercel\.app|https?://tauri\.localhost(?::\d+)?|http://127\.0\.0\.1(?::\d+)?|http://localhost(?::\d+)?",
     allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],

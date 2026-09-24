@@ -507,7 +507,11 @@
       }
     });
 
-    const PRAAT_API_URL = 'https://oci-free-tier-a1.tailc8a3e1.ts.net/formant-api';
+    const isPackagedApp = ['file:', 'tauri:', 'http:'].includes(window.location.protocol) &&
+      !['localhost', '127.0.0.1'].includes(window.location.hostname) &&
+      window.location.hostname !== 'gaga-korean.com';
+    const PRAAT_API_URL = window.GAGA_API_URL ||
+      (isPackagedApp ? 'http://127.0.0.1:8765' : 'https://oci-free-tier-a1.tailc8a3e1.ts.net/formant-api');
     async function estimateFormants(blob) {
       const body = new FormData();
       body.append('audio', blob, `gaga-${Date.now()}.webm`);
