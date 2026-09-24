@@ -27,12 +27,10 @@ app.add_middleware(
 
 def _read_formant_rows(path: str) -> dict[str, int] | None:
     values: list[tuple[float, float, float]] = []
-    for line in Path(path).read_text(encoding="utf-8").splitlines():
-        parts = line.split()
-        if len(parts) < 3:
-            continue
+    tokens = Path(path).read_text(encoding="utf-8").split()
+    for index in range(0, len(tokens) - 2, 3):
         try:
-            row = tuple(float(value) for value in parts[:3])
+            row = tuple(float(value) for value in tokens[index:index + 3])
         except ValueError:
             continue
         if all(math.isfinite(value) and value > 0 for value in row):

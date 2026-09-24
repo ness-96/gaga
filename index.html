@@ -524,6 +524,7 @@
       if (!recordedBlob) return;
       recordButton.disabled = true;
       audioRecordButton.disabled = true;
+      setPracticeControlsDisabled(true);
       feedbackText.textContent = '음성값을 분석하고 있습니다...';
       f1Value.textContent = '측정 중';
       f2Value.textContent = '측정 중';
@@ -557,6 +558,7 @@
       } finally {
         recordButton.disabled = false;
         audioRecordButton.disabled = false;
+        setPracticeControlsDisabled(false);
       }
     }
 
