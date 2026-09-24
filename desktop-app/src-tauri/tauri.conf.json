@@ -31,7 +31,8 @@
       "../../run_local_api.sh",
       "../../THIRD_PARTY_NOTICES.txt",
       "../../models",
-      "../../.venv"
+      "../../.venv",
+      "/usr/bin/praat"
     ],
     "icon": [
       "icons/32x32.png",

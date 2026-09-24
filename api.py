@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from vosk import KaldiRecognizer, Model
 
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
-PRAAT_BINARY = shutil.which("praat") or "/usr/bin/praat"
+PRAAT_BINARY = shutil.which("praat") or str(Path(__file__).with_name("praat"))
 PRAAT_SCRIPT = Path(__file__).with_name("praat_formants.praat")
 VOSK_MODEL_PATH = Path(__file__).with_name("models") / "vosk-model-small-ko-0.22"
 VOSK_MODEL = Model(str(VOSK_MODEL_PATH)) if VOSK_MODEL_PATH.exists() else None
