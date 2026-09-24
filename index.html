@@ -85,23 +85,6 @@
     .vowel-legend b { color: var(--ink); }
     .sticker { position: absolute; right: 2px; bottom: 60px; display: grid; width: 103px; height: 103px; place-items: center; border-radius: 50%; background: var(--lime); color: #344137; font-size: 12px; font-weight: 800; line-height: 1.35; text-align: center; transform: rotate(10deg); }
     .sticker::before { position: absolute; inset: 7px; border: 1px dashed rgba(52,65,55,.4); border-radius: 50%; content: ""; }
-    .speaker-card { position: absolute; z-index: 2; left: 0; bottom: 13px; width: 304px; padding: 18px; border-radius: 19px; background: var(--cream); box-shadow: var(--shadow); }
-    .speaker-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-    .speaker-title { font-size: 13px; font-weight: 800; }
-    .speaker-visual { position: relative; height: 177px; overflow: hidden; border-radius: 14px; background: #c8d8d0; }
-    .speaker-visual img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 28%; filter: saturate(.7); }
-    .speaker-visual::after { position: absolute; inset: 0; content: ""; background: linear-gradient(180deg, transparent 46%, rgba(25,37,33,.5)); }
-    .speaker-target { position: absolute; z-index: 2; left: 13px; bottom: 12px; padding: 7px 9px; border-radius: 8px; background: rgba(251,251,247,.9); font: 500 11px "DM Mono", monospace; }
-    .speaker-wave { position: absolute; z-index: 2; right: 12px; bottom: 15px; display: flex; align-items: center; gap: 3px; height: 21px; }
-    .speaker-wave i { display: block; width: 3px; border-radius: 3px; background: var(--lime); animation: wave 1s ease-in-out infinite alternate; }
-    .speaker-wave i:nth-child(1) { height: 9px; animation-delay: -.2s; }
-    .speaker-wave i:nth-child(2) { height: 17px; animation-delay: -.5s; }
-    .speaker-wave i:nth-child(3) { height: 12px; animation-delay: -.1s; }
-    .speaker-wave i:nth-child(4) { height: 20px; animation-delay: -.7s; }
-    .speaker-wave i:nth-child(5) { height: 11px; animation-delay: -.4s; }
-    @keyframes wave { to { transform: scaleY(.45); opacity: .55; } }
-    .speaker-feedback { display: flex; align-items: center; gap: 7px; margin-top: 12px; font-size: 11px; }
-    .speaker-feedback b { color: var(--coral); font-weight: 800; }
     .practice-shell { display: grid; grid-template-columns: 1.05fr .95fr; gap: 14px; padding: 14px; border-radius: 22px; background: var(--ink); color: #fff; }
     .practice-audio { position: relative; display: flex; min-height: 330px; flex-direction: column; justify-content: center; align-items: center; padding: 24px; border-radius: 15px; background: #35433e; text-align: center; }
     .practice-audio-head { position: absolute; align-self: stretch; display: flex; justify-content: space-between; margin-top: -270px; color: #bcc8c0; font-size: 10px; }
@@ -224,9 +207,6 @@
       .practice-shell { grid-template-columns: 1fr; }
       .practice-feedback { padding: 28px 20px 30px; }
       .practice-audio { min-height: 280px; }
-      .speaker-card { left: 0; width: 275px; }
-      .speaker-visual { height: 157px; }
-      .speaker-card .speaker-feedback { font-size: 10px; }
       .app-next { display: block; padding: 22px; }
       .app-next button { margin-top: 18px; }
     }
@@ -237,8 +217,6 @@
       .vowel-card { width: 244px; padding: 17px; }
       .chart { height: 150px; }
       .sticker { width: 84px; height: 84px; font-size: 10px; }
-      .speaker-card { width: 244px; padding: 15px; }
-      .speaker-visual { height: 143px; }
     }
   </style>
 </head>
@@ -281,17 +259,8 @@
         </div>
         <p class="hero-note mono" data-i18n="heroNote">1:1 &nbsp; · &nbsp; small group &nbsp; · &nbsp; online / offline</p>
       </div>
-      <div class="hero-visual" aria-label="Learner pronunciation preview">
-        <div class="hero-photo"><img src="https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1000&q=85" alt="Students learning together" /></div>
-        <div class="speaker-card">
-          <div class="speaker-card-head"><span class="speaker-title">발음 스튜디오</span><span class="status"><i></i> 듣는 중</span></div>
-          <div class="speaker-visual">
-            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=700&q=85" alt="발음하는 학습자" />
-            <span class="speaker-target">/ㅏ/ · target</span>
-            <span class="speaker-wave"><i></i><i></i><i></i><i></i><i></i></span>
-          </div>
-          <div class="speaker-feedback"><b>현재 피드백</b><span>입을 조금 더 벌려 보세요.</span></div>
-        </div>
+      <div class="hero-visual" aria-label="Korean neighborhood scene">
+        <div class="hero-photo"><img src="https://images.unsplash.com/photo-1517154421773-0529f29ea451?auto=format&fit=crop&w=1000&q=85" alt="한국의 번화한 거리" /></div>
         <div class="sticker" data-i18n="sticker">오늘의<br />작은 변화<br />✦</div>
       </div>
     </section>
