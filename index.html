@@ -126,7 +126,8 @@
     .feedback-card { padding: 16px; border: 1px solid rgba(255,255,255,.15); border-radius: 13px; background: rgba(255,255,255,.06); }
     .feedback-card span { color: #91a097; font-size: 10px; }
     .feedback-card strong { display: block; margin-top: 7px; color: var(--lime); font-size: 14px; }
-    .feedback-metrics { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 17px; color: #91a097; font: 500 10px "DM Mono", monospace; }
+    .feedback-metrics { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 8px; color: #91a097; font: 500 10px "DM Mono", monospace; }
+    .metrics-title { margin-top: 17px; color: #91a097; font-size: 10px; }
     .feedback-metrics b { color: #fff; font-weight: 500; }
     .record-button { align-self: flex-start; margin-top: 24px; padding: 13px 17px; border: 0; border-radius: 999px; background: var(--coral); color: #fff; font-size: 12px; font-weight: 800; }
     .record-button.recording { background: #fff; color: var(--ink); }
@@ -307,6 +308,7 @@
           <h3>말하고,<br /><em>바로</em> 확인해요.</h3>
           <p>녹음된 음성에서 F1·F2·F3를 추출하고, 선택한 성별의 허용 범위와 비교해 다음 발음에서 바꿀 방향을 알려줍니다.</p>
           <div class="feedback-card"><span>현재 피드백</span><strong id="feedbackText">녹음 후 분석 결과가 표시됩니다.</strong></div>
+          <div class="metrics-title mono">내 목소리 포먼트 값</div>
           <div class="feedback-metrics"><span>F1 <b id="f1Value">분석 대기</b></span><span>F2 <b id="f2Value">분석 대기</b></span><span>F3 <b id="f3Value">분석 대기</b></span></div>
           <div class="target-reference" id="targetReference">남성 · ㅓ 기준 F1 480–684 / F2 822–1231 / F3 2493–2836 Hz</div>
           <button class="record-button" id="recordButton" disabled>완료 · 분석하기</button>
@@ -486,10 +488,11 @@
           recordedBlob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
           audioPlayer.src = URL.createObjectURL(recordedBlob);
           audioPlayer.classList.add('visible');
-          recordButton.disabled = false;
           recordButton.classList.add('ready');
-          setPracticeControlsDisabled(false);
           microphoneStream?.getTracks().forEach(track => track.stop());
+          recordButton.textContent = '다시 분석하기';
+          audioHint.textContent = `${profileLabels[selectedProfile]} · 녹음 완료. 포먼트 값을 분석하고 있습니다.`;
+          analyzeRecordedBlob();
         };
         recorder.start();
         setPracticeControlsDisabled(true);
@@ -575,9 +578,10 @@
       }
     }
 
-    recordButton.addEventListener('click', async () => {
+    async function analyzeRecordedBlob() {
       if (!recordedBlob) return;
       recordButton.disabled = true;
+      audioRecordButton.disabled = true;
       feedbackText.textContent = '음성값을 분석하고 있습니다...';
       f1Value.textContent = '측정 중';
       f2Value.textContent = '측정 중';
@@ -610,8 +614,11 @@
         f3Value.textContent = '분석 실패';
       } finally {
         recordButton.disabled = false;
+        audioRecordButton.disabled = false;
       }
-    });
+    }
+
+    recordButton.addEventListener('click', analyzeRecordedBlob);
     document.getElementById('consultButton').addEventListener('click', () => { toast.textContent = translations[document.documentElement.lang || 'ko'].toast; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 3400); });
     document.getElementById('appButton').addEventListener('click', () => {
       toast.textContent = '앱 버전은 준비 중입니다. 홈페이지에서는 ㅓ와 ㅗ를 먼저 연습해 보세요.';
