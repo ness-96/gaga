@@ -525,19 +525,34 @@
       }
       return bestFrequency;
     }
+    function hasUsableQuality(samples) {
+      if (samples.length < 512) return false;
+      let squareSum = 0;
+      let peak = 0;
+      for (const sample of samples) {
+        squareSum += sample * sample;
+        peak = Math.max(peak, Math.abs(sample));
+      }
+      const rms = Math.sqrt(squareSum / samples.length);
+      return rms >= 0.008 && peak < 0.995;
+    }
 
     async function estimateFormants(blob) {
       const context = new AudioContext();
-      const buffer = await context.decodeAudioData(await blob.arrayBuffer());
-      const source = buffer.getChannelData(0);
-      const length = Math.min(2048, source.length);
-      const start = Math.max(0, Math.floor(source.length / 2 - length / 2));
-      const samples = source.slice(start, start + length);
-      const f1 = findPeak(samples, buffer.sampleRate, 250, 1000);
-      const f2 = findPeak(samples, buffer.sampleRate, 900, 1800);
-      const f3 = findPeak(samples, buffer.sampleRate, 1800, 3800);
-      await context.close();
-      return { f1, f2, f3 };
+      try {
+        const buffer = await context.decodeAudioData(await blob.arrayBuffer());
+        const source = buffer.getChannelData(0);
+        const length = Math.min(2048, source.length);
+        const start = Math.max(0, Math.floor(source.length / 2 - length / 2));
+        const samples = source.slice(start, start + length);
+        if (!hasUsableQuality(samples)) throw new Error('poor-audio-quality');
+        const f1 = findPeak(samples, buffer.sampleRate, 250, 1000);
+        const f2 = findPeak(samples, buffer.sampleRate, 900, 1800);
+        const f3 = findPeak(samples, buffer.sampleRate, 1800, 3800);
+        return { f1, f2, f3 };
+      } finally {
+        await context.close();
+      }
     }
 
     recordButton.addEventListener('click', async () => {
@@ -562,7 +577,9 @@
         if (f3 > target.f3.range[1]) feedback.push('입술을 조금 더 둥글게 해 보세요.');
         feedbackText.textContent = feedback.join(' ') || '잘했어요! 좋아요. F1·F2·F3가 모두 허용 범위 안에 있어요.';
       } catch (error) {
-        feedbackText.textContent = '녹음이 짧거나 불안정합니다. 다시 녹음해 주세요.';
+        feedbackText.textContent = error.message === 'poor-audio-quality'
+          ? '음질이 안 좋으니 다시 녹음해 주세요.'
+          : '녹음이 짧거나 불안정합니다. 다시 녹음해 주세요.';
         f1Value.textContent = '분석 실패';
         f2Value.textContent = '분석 실패';
         f3Value.textContent = '분석 실패';
