@@ -560,7 +560,7 @@
         if (f2 > target.f2.range[1]) feedback.push('혀를 조금 뒤로 이동해 보세요.');
         if (f3 < target.f3.range[0]) feedback.push('입술을 조금 덜 둥글게 해 보세요.');
         if (f3 > target.f3.range[1]) feedback.push('입술을 조금 더 둥글게 해 보세요.');
-        feedbackText.textContent = feedback.join(' ') || '목표 모음에 가까워요. 같은 위치를 유지해 보세요.';
+        feedbackText.textContent = feedback.join(' ') || '잘했어요! 좋아요. F1·F2·F3가 모두 허용 범위 안에 있어요.';
       } catch (error) {
         feedbackText.textContent = '녹음이 짧거나 불안정합니다. 다시 녹음해 주세요.';
         f1Value.textContent = '분석 실패';
