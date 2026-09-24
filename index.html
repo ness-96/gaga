@@ -94,6 +94,14 @@
     .audio-target { margin-top: 19px; color: #fff; font: 500 21px "DM Mono", monospace; }
     .vowel-select { margin-top: 19px; padding: 5px 10px; border: 1px solid rgba(217,245,108,.5); border-radius: 8px; background: transparent; color: var(--lime); font: 500 21px "DM Mono", monospace; }
     .vowel-select option { color: var(--ink); }
+    .voice-profile { width: 100%; margin-top: 18px; }
+    .voice-profile legend { margin-bottom: 8px; color: #aab8ae; font-size: 10px; }
+    .voice-profile-options { display: flex; gap: 8px; }
+    .voice-profile label { flex: 1; cursor: pointer; }
+    .voice-profile input { position: absolute; opacity: 0; pointer-events: none; }
+    .voice-profile span { display: block; padding: 9px 10px; border: 1px solid rgba(255,255,255,.18); border-radius: 8px; color: #b9c5bd; font-size: 11px; text-align: center; transition: .2s ease; }
+    .voice-profile input:checked + span { border-color: var(--lime); background: rgba(217,245,108,.11); color: var(--lime); }
+    .target-reference { margin-top: 14px; color: #91a097; font: 500 10px "DM Mono", monospace; line-height: 1.5; }
     .audio-hint { margin-top: 8px; color: #aab8ae; font-size: 11px; }
     .audio-wave { display: flex; align-items: center; gap: 4px; height: 26px; margin-top: 22px; }
     .audio-wave i { display: block; width: 4px; height: 8px; border-radius: 3px; background: #83a18f; }
@@ -278,11 +286,18 @@
         <div class="practice-audio">
           <div class="practice-audio-head"><span>audio practice</span><span class="live-dot"><i></i> microphone ready</span></div>
           <div class="mic-orb" id="micOrb">♩</div>
+          <fieldset class="voice-profile">
+            <legend>포먼트 기준 선택</legend>
+            <div class="voice-profile-options">
+              <label><input type="radio" name="voiceProfile" value="male" checked /><span>남성 기준</span></label>
+              <label><input type="radio" name="voiceProfile" value="female" /><span>여성 기준</span></label>
+            </div>
+          </fieldset>
           <select class="vowel-select" id="vowelSelect" aria-label="목표 모음 선택">
             <option value="ㅓ">/ㅓ/</option>
             <option value="ㅗ">/ㅗ/</option>
           </select>
-          <div class="audio-hint" id="audioHint">목표 모음을 보고 발음해 보세요.</div>
+          <div class="audio-hint" id="audioHint">남성 기준 · 목표 모음을 보고 발음해 보세요.</div>
           <div class="audio-wave" id="audioWave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
           <audio class="audio-player" id="audioPlayer" controls></audio>
           <button class="audio-record-button" id="audioRecordButton">● 녹음 시작</button>
@@ -290,9 +305,10 @@
         <div class="practice-feedback">
           <div class="section-kicker mono">live feedback</div>
           <h3>말하고,<br /><em>바로</em> 확인해요.</h3>
-          <p>녹음된 음성에서 F1·F2를 추출하고 목표 모음과 비교해, 다음 발음에서 바꿀 방향을 알려줍니다.</p>
+          <p>녹음된 음성에서 F1·F2를 추출하고, 선택한 남성·여성 기준의 목표값과 비교해 다음 발음에서 바꿀 방향을 알려줍니다.</p>
           <div class="feedback-card"><span>현재 피드백</span><strong id="feedbackText">녹음 후 분석 결과가 표시됩니다.</strong></div>
           <div class="feedback-metrics"><span>F1 <b id="f1Value">분석 대기</b></span><span>F2 <b id="f2Value">분석 대기</b></span></div>
+          <div class="target-reference" id="targetReference">남성 기준 · ㅓ 목표 F1 500 / F2 1100 Hz</div>
           <button class="record-button" id="recordButton" disabled>완료 · 분석하기</button>
           <div class="practice-note">녹음이 끝나면 완료를 눌러 목표 모음과의 거리를 분석합니다.</div>
         </div>
@@ -384,22 +400,68 @@
     const micOrb = document.getElementById('micOrb');
     const audioHint = document.getElementById('audioHint');
     const vowelSelect = document.getElementById('vowelSelect');
-    const targetVowels = {
-      'ㅓ': { f1: 600, f2: 1000 },
-      'ㅗ': { f1: 400, f2: 800 }
-    };
-    vowelSelect.addEventListener('change', () => {
-      audioHint.textContent = `목표 모음 /${vowelSelect.value}/를 한 번 길게 발음해 보세요.`;
-      feedbackText.textContent = '녹음 후 분석 결과가 표시됩니다.';
-      f1Value.textContent = '분석 대기';
-      f2Value.textContent = '분석 대기';
-    });
+    const targetReference = document.getElementById('targetReference');
     const feedbackText = document.getElementById('feedbackText');
     const f1Value = document.getElementById('f1Value');
     const f2Value = document.getElementById('f2Value');
+    const voiceProfileInputs = [...document.querySelectorAll('input[name="voiceProfile"]')];
+    const profileLabels = { male: '남성 기준', female: '여성 기준' };
+    const targetVowels = {
+      male: {
+        'ㅓ': { f1: 500, f2: 1100 },
+        'ㅗ': { f1: 400, f2: 800 }
+      },
+      female: {
+        'ㅓ': { f1: 600, f2: 1300 },
+        'ㅗ': { f1: 450, f2: 950 }
+      }
+    };
+    let selectedProfile = 'male';
     let recorder;
     let microphoneStream;
     let recordedBlob;
+
+    function getTarget() {
+      return targetVowels[selectedProfile][vowelSelect.value];
+    }
+
+    function updateTargetReference() {
+      const target = getTarget();
+      const profileLabel = profileLabels[selectedProfile];
+      audioHint.textContent = `${profileLabel} · 목표 모음 /${vowelSelect.value}/를 한 번 길게 발음해 보세요.`;
+      targetReference.textContent = `${profileLabel} · ${vowelSelect.value} 목표 F1 ${target.f1} / F2 ${target.f2} Hz`;
+    }
+
+    function resetAnalysis() {
+      feedbackText.textContent = '녹음 후 분석 결과가 표시됩니다.';
+      f1Value.textContent = '분석 대기';
+      f2Value.textContent = '분석 대기';
+      recordButton.disabled = true;
+      recordButton.classList.remove('ready');
+      if (recordedBlob) {
+        URL.revokeObjectURL(audioPlayer.src);
+        recordedBlob = null;
+        audioPlayer.removeAttribute('src');
+        audioPlayer.load();
+        audioPlayer.classList.remove('visible');
+      }
+    }
+
+    function setPracticeControlsDisabled(disabled) {
+      vowelSelect.disabled = disabled;
+      voiceProfileInputs.forEach(input => { input.disabled = disabled; });
+    }
+
+    vowelSelect.addEventListener('change', () => {
+      updateTargetReference();
+      resetAnalysis();
+    });
+    voiceProfileInputs.forEach(input => input.addEventListener('change', event => {
+      selectedProfile = event.target.value;
+      updateTargetReference();
+      resetAnalysis();
+    }));
+    updateTargetReference();
 
     audioRecordButton.addEventListener('click', async () => {
       if (recorder?.state === 'recording') {
@@ -407,7 +469,7 @@
         audioRecordButton.textContent = '● 녹음 시작';
         audioWave.classList.remove('active');
         micOrb.classList.remove('recording');
-        audioHint.textContent = '녹음 완료. 완료 버튼을 눌러 분석하세요.';
+        audioHint.textContent = `${profileLabels[selectedProfile]} · 녹음 완료. 완료 버튼을 눌러 분석하세요.`;
         return;
       }
       if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
@@ -425,15 +487,18 @@
           audioPlayer.classList.add('visible');
           recordButton.disabled = false;
           recordButton.classList.add('ready');
+          setPracticeControlsDisabled(false);
           microphoneStream?.getTracks().forEach(track => track.stop());
         };
         recorder.start();
+        setPracticeControlsDisabled(true);
         audioRecordButton.textContent = '■ 녹음 완료';
         audioWave.classList.add('active');
         micOrb.classList.add('recording');
-        audioHint.textContent = `목표 모음 /${vowelSelect.value}/를 한 번 길게 발음해 보세요.`;
+        audioHint.textContent = `${profileLabels[selectedProfile]} · 목표 모음 /${vowelSelect.value}/를 한 번 길게 발음해 보세요.`;
         recordButton.disabled = true;
       } catch (error) {
+        setPracticeControlsDisabled(false);
         audioHint.textContent = '마이크 권한을 허용한 뒤 다시 시도해 주세요.';
       }
     });
@@ -483,7 +548,7 @@
         const { f1, f2 } = await estimateFormants(recordedBlob);
         f1Value.textContent = `${f1} Hz`;
         f2Value.textContent = `${f2} Hz`;
-        const target = targetVowels[vowelSelect.value];
+        const target = getTarget();
         const f1Margin = Math.max(100, target.f1 * 0.2);
         const f2Margin = Math.max(180, target.f2 * 0.2);
         const feedback = [];
