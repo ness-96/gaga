@@ -20,6 +20,8 @@ PRAAT_SCRIPT = Path(__file__).with_name("praat_formants.praat")
 VOSK_MODEL_PATH = Path(__file__).with_name("models") / "vosk-model-small-ko-0.22"
 VOSK_MODEL = Model(str(VOSK_MODEL_PATH)) if VOSK_MODEL_PATH.exists() else None
 VOSK_VOWELS = ["어", "오", "아", "으", "우", "이", "에", "[unk]"]
+VOWEL_WORD_BY_JAMO = {"ㅓ": "어", "ㅗ": "오"}
+VOWEL_JAMO_BY_WORD = {"어": "ㅓ", "오": "ㅗ", "아": "ㅏ", "으": "ㅡ", "우": "ㅜ", "이": "ㅣ", "에": "ㅔ"}
 FORMANT_REFERENCE = {
     "male": {"ㅓ": {"f1": (521.4, 41.1), "f2": (903.7, 81.4)}},
     "female": {"ㅓ": {"f1": (659.8, 90.4), "f2": (1182.7, 150.5)}},
@@ -79,6 +81,7 @@ def _recognize_vowel(path: str, target: str) -> dict[str, object]:
             recognizer.AcceptWaveform(data)
     result = json.loads(recognizer.FinalResult())
     recognized = "".join(result.get("text", "").split())
+    recognized_vowel = VOWEL_JAMO_BY_WORD.get(recognized, recognized or None)
     words = result.get("result", [])
     confidences = [
         float(word["conf"])
@@ -86,13 +89,14 @@ def _recognize_vowel(path: str, target: str) -> dict[str, object]:
         if math.isfinite(float(word.get("conf", 0)))
     ]
     confidence = sum(confidences) / len(confidences) if confidences else None
-    target_match = target in recognized
+    target_match = VOWEL_WORD_BY_JAMO.get(target, target) in recognized
     score = None
     if confidence is not None:
         score = round(confidence * 100 if target_match else (1 - confidence) * 100)
     return {
         "stt_available": True,
-        "recognized_vowel": recognized or None,
+        "recognized_vowel": recognized_vowel,
+        "recognized_text": recognized or None,
         "stt_score": score,
         "stt_confidence": round(confidence, 3) if confidence is not None else None,
     }
