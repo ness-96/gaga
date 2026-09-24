@@ -507,47 +507,92 @@
       }
     });
 
-    function spectralPower(samples, sampleRate, frequency) {
-      let real = 0;
-      let imaginary = 0;
-      const step = (2 * Math.PI * frequency) / sampleRate;
+    function resample(samples, sourceRate, targetRate) {
+      if (sourceRate === targetRate) return samples;
+      const length = Math.max(1, Math.round(samples.length * targetRate / sourceRate));
+      const output = new Float64Array(length);
+      const ratio = sourceRate / targetRate;
+      for (let index = 0; index < length; index++) {
+        const sourceIndex = index * ratio;
+        const lower = Math.floor(sourceIndex);
+        const upper = Math.min(samples.length - 1, lower + 1);
+        const amount = sourceIndex - lower;
+        output[index] = samples[lower] * (1 - amount) + samples[upper] * amount;
+      }
+      return output;
+    }
+
+    function lpcCoefficients(samples, order) {
+      const windowed = new Float64Array(samples.length);
       for (let index = 0; index < samples.length; index++) {
+        const emphasized = samples[index] - (index ? 0.97 * samples[index - 1] : 0);
         const window = 0.54 - 0.46 * Math.cos((2 * Math.PI * index) / (samples.length - 1));
-        const value = samples[index] * window;
-        real += value * Math.cos(step * index);
-        imaginary -= value * Math.sin(step * index);
+        windowed[index] = emphasized * window;
       }
-      return real * real + imaginary * imaginary;
+      const autocorrelation = new Float64Array(order + 1);
+      for (let lag = 0; lag <= order; lag++) {
+        for (let index = lag; index < windowed.length; index++) {
+          autocorrelation[lag] += windowed[index] * windowed[index - lag];
+        }
+      }
+      let error = autocorrelation[0];
+      if (!error) return null;
+      let coefficients = new Float64Array(order + 1);
+      coefficients[0] = 1;
+      for (let index = 1; index <= order; index++) {
+        let residual = autocorrelation[index];
+        for (let coefficient = 1; coefficient < index; coefficient++) {
+          residual += coefficients[coefficient] * autocorrelation[index - coefficient];
+        }
+        const reflection = Math.max(-0.99, Math.min(0.99, -residual / error));
+        const updated = coefficients.slice();
+        updated[index] = reflection;
+        for (let coefficient = 1; coefficient < index; coefficient++) {
+          updated[coefficient] = coefficients[coefficient] + reflection * coefficients[index - coefficient];
+        }
+        coefficients = updated;
+        error *= 1 - reflection * reflection;
+        if (error <= 1e-9) break;
+      }
+      return coefficients;
     }
 
-    function findPeak(samples, sampleRate, minFrequency, maxFrequency) {
-      let bestFrequency = minFrequency;
-      let bestPower = 0;
-      for (let frequency = minFrequency; frequency <= maxFrequency; frequency += 10) {
-        const power = spectralPower(samples, sampleRate, frequency);
-        if (power > bestPower) {
-          bestPower = power;
-          bestFrequency = frequency;
+    function findLpcFormants(samples, sampleRate) {
+      const normalizedSamples = resample(samples, sampleRate, 16000);
+      const coefficients = lpcCoefficients(normalizedSamples, 16);
+      if (!coefficients) return null;
+      const frequencies = [];
+      const envelope = [];
+      for (let frequency = 200; frequency <= 4000; frequency += 10) {
+        const angularFrequency = (2 * Math.PI * frequency) / 16000;
+        let real = 1;
+        let imaginary = 0;
+        for (let coefficient = 1; coefficient < coefficients.length; coefficient++) {
+          real += coefficients[coefficient] * Math.cos(angularFrequency * coefficient);
+          imaginary -= coefficients[coefficient] * Math.sin(angularFrequency * coefficient);
+        }
+        frequencies.push(frequency);
+        envelope.push(1 / (real * real + imaginary * imaginary));
+      }
+      const candidates = [];
+      for (let index = 1; index < envelope.length - 1; index++) {
+        if (envelope[index] >= envelope[index - 1] && envelope[index] >= envelope[index + 1]) {
+          candidates.push({ frequency: frequencies[index], power: envelope[index] });
         }
       }
-      return bestFrequency;
+      candidates.sort((left, right) => right.power - left.power);
+      const selected = [];
+      for (const candidate of candidates) {
+        if (selected.every(formant => Math.abs(formant.frequency - candidate.frequency) >= 180)) {
+          selected.push(candidate);
+        }
+        if (selected.length === 3) break;
+      }
+      return selected.length === 3
+        ? selected.sort((left, right) => left.frequency - right.frequency).map(formant => formant.frequency)
+        : null;
     }
 
-    function findSmoothedPeak(samples, sampleRate, minFrequency, maxFrequency) {
-      let bestFrequency = minFrequency;
-      let bestPower = 0;
-      for (let frequency = minFrequency; frequency <= maxFrequency; frequency += 10) {
-        let power = 0;
-        for (let offset = -60; offset <= 60; offset += 20) {
-          power += spectralPower(samples, sampleRate, frequency + offset);
-        }
-        if (power > bestPower) {
-          bestPower = power;
-          bestFrequency = frequency;
-        }
-      }
-      return bestFrequency;
-    }
     function hasUsableQuality(samples) {
       if (samples.length < 512) return false;
       let squareSum = 0;
@@ -565,13 +610,13 @@
       try {
         const buffer = await context.decodeAudioData(await blob.arrayBuffer());
         const source = buffer.getChannelData(0);
-        const length = Math.min(2048, source.length);
+        const length = Math.min(4096, source.length);
         const start = Math.max(0, Math.floor(source.length / 2 - length / 2));
         const samples = source.slice(start, start + length);
         if (!hasUsableQuality(samples)) throw new Error('poor-audio-quality');
-        const f1 = findPeak(samples, buffer.sampleRate, 250, 1000);
-        const f2 = findPeak(samples, buffer.sampleRate, 900, 1800);
-        const f3 = findSmoothedPeak(samples, buffer.sampleRate, 1800, 3800);
+        const formants = findLpcFormants(samples, buffer.sampleRate);
+        if (!formants) throw new Error('formant-analysis-failed');
+        const [f1, f2, f3] = formants;
         return { f1, f2, f3 };
       } finally {
         await context.close();
