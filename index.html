@@ -504,20 +504,40 @@
       }
     });
 
+    function spectralPower(samples, sampleRate, frequency) {
+      let real = 0;
+      let imaginary = 0;
+      const step = (2 * Math.PI * frequency) / sampleRate;
+      for (let index = 0; index < samples.length; index++) {
+        const window = 0.54 - 0.46 * Math.cos((2 * Math.PI * index) / (samples.length - 1));
+        const value = samples[index] * window;
+        real += value * Math.cos(step * index);
+        imaginary -= value * Math.sin(step * index);
+      }
+      return real * real + imaginary * imaginary;
+    }
+
     function findPeak(samples, sampleRate, minFrequency, maxFrequency) {
       let bestFrequency = minFrequency;
       let bestPower = 0;
       for (let frequency = minFrequency; frequency <= maxFrequency; frequency += 10) {
-        let real = 0;
-        let imaginary = 0;
-        const step = (2 * Math.PI * frequency) / sampleRate;
-        for (let index = 0; index < samples.length; index++) {
-          const window = 0.54 - 0.46 * Math.cos((2 * Math.PI * index) / (samples.length - 1));
-          const value = samples[index] * window;
-          real += value * Math.cos(step * index);
-          imaginary -= value * Math.sin(step * index);
+        const power = spectralPower(samples, sampleRate, frequency);
+        if (power > bestPower) {
+          bestPower = power;
+          bestFrequency = frequency;
         }
-        const power = real * real + imaginary * imaginary;
+      }
+      return bestFrequency;
+    }
+
+    function findSmoothedPeak(samples, sampleRate, minFrequency, maxFrequency) {
+      let bestFrequency = minFrequency;
+      let bestPower = 0;
+      for (let frequency = minFrequency; frequency <= maxFrequency; frequency += 10) {
+        let power = 0;
+        for (let offset = -60; offset <= 60; offset += 20) {
+          power += spectralPower(samples, sampleRate, frequency + offset);
+        }
         if (power > bestPower) {
           bestPower = power;
           bestFrequency = frequency;
@@ -548,7 +568,7 @@
         if (!hasUsableQuality(samples)) throw new Error('poor-audio-quality');
         const f1 = findPeak(samples, buffer.sampleRate, 250, 1000);
         const f2 = findPeak(samples, buffer.sampleRate, 900, 1800);
-        const f3 = findPeak(samples, buffer.sampleRate, 1800, 3800);
+        const f3 = findSmoothedPeak(samples, buffer.sampleRate, 1800, 3800);
         return { f1, f2, f3 };
       } finally {
         await context.close();
@@ -573,9 +593,14 @@
         if (f1 > target.f1.range[1]) feedback.push('입을 조금 덜 벌리고 오므려 보세요.');
         if (f2 < target.f2.range[0]) feedback.push('혀를 조금 더 앞으로 이동해 보세요.');
         if (f2 > target.f2.range[1]) feedback.push('혀를 조금 뒤로 이동해 보세요.');
-        if (f3 < target.f3.range[0]) feedback.push('입술을 조금 덜 둥글게 해 보세요.');
-        if (f3 > target.f3.range[1]) feedback.push('입술을 조금 더 둥글게 해 보세요.');
-        feedbackText.textContent = feedback.join(' ') || '잘했어요! 좋아요. F1·F2·F3가 모두 허용 범위 안에 있어요.';
+        if (vowelSelect.value === 'ㅗ') {
+          if (f3 < target.f3.range[0]) feedback.push('입술을 조금 덜 둥글게 해 보세요.');
+          if (f3 > target.f3.range[1]) feedback.push('입술을 조금 더 둥글게 해 보세요.');
+        }
+        const successMessage = vowelSelect.value === 'ㅗ'
+          ? '잘했어요! 좋아요. F1·F2·F3가 모두 허용 범위 안에 있어요.'
+          : '잘했어요! 좋아요. F1·F2가 허용 범위 안에 있어요.';
+        feedbackText.textContent = feedback.join(' ') || successMessage;
       } catch (error) {
         feedbackText.textContent = error.message === 'poor-audio-quality'
           ? '음질이 안 좋으니 다시 녹음해 주세요.'
