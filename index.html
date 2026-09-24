@@ -287,17 +287,17 @@
           <div class="practice-audio-head"><span>audio practice</span><span class="live-dot"><i></i> microphone ready</span></div>
           <div class="mic-orb" id="micOrb">♩</div>
           <fieldset class="voice-profile">
-            <legend>포먼트 기준 선택</legend>
+            <legend>성별을 골라 주세요</legend>
             <div class="voice-profile-options">
-              <label><input type="radio" name="voiceProfile" value="male" checked /><span>남성 기준</span></label>
-              <label><input type="radio" name="voiceProfile" value="female" /><span>여성 기준</span></label>
+              <label><input type="radio" name="voiceProfile" value="male" checked /><span>남성</span></label>
+              <label><input type="radio" name="voiceProfile" value="female" /><span>여성</span></label>
             </div>
           </fieldset>
           <select class="vowel-select" id="vowelSelect" aria-label="목표 모음 선택">
             <option value="ㅓ">/ㅓ/</option>
             <option value="ㅗ">/ㅗ/</option>
           </select>
-          <div class="audio-hint" id="audioHint">남성 기준 · 목표 모음을 보고 발음해 보세요.</div>
+          <div class="audio-hint" id="audioHint">남성 · 목표 모음을 보고 발음해 보세요.</div>
           <div class="audio-wave" id="audioWave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
           <audio class="audio-player" id="audioPlayer" controls></audio>
           <button class="audio-record-button" id="audioRecordButton">● 녹음 시작</button>
@@ -305,10 +305,10 @@
         <div class="practice-feedback">
           <div class="section-kicker mono">live feedback</div>
           <h3>말하고,<br /><em>바로</em> 확인해요.</h3>
-          <p>녹음된 음성에서 F1·F2를 추출하고, 선택한 남성·여성 기준의 목표값과 비교해 다음 발음에서 바꿀 방향을 알려줍니다.</p>
+          <p>녹음된 음성에서 F1·F2를 추출하고, 선택한 성별의 목표값과 비교해 다음 발음에서 바꿀 방향을 알려줍니다.</p>
           <div class="feedback-card"><span>현재 피드백</span><strong id="feedbackText">녹음 후 분석 결과가 표시됩니다.</strong></div>
           <div class="feedback-metrics"><span>F1 <b id="f1Value">분석 대기</b></span><span>F2 <b id="f2Value">분석 대기</b></span></div>
-          <div class="target-reference" id="targetReference">남성 기준 · ㅓ 목표 F1 500 / F2 1100 Hz</div>
+          <div class="target-reference" id="targetReference">남성 · ㅓ 목표 F1 500 / F2 1100 Hz</div>
           <button class="record-button" id="recordButton" disabled>완료 · 분석하기</button>
           <div class="practice-note">녹음이 끝나면 완료를 눌러 목표 모음과의 거리를 분석합니다.</div>
         </div>
@@ -405,7 +405,7 @@
     const f1Value = document.getElementById('f1Value');
     const f2Value = document.getElementById('f2Value');
     const voiceProfileInputs = [...document.querySelectorAll('input[name="voiceProfile"]')];
-    const profileLabels = { male: '남성 기준', female: '여성 기준' };
+    const profileLabels = { male: '남성', female: '여성' };
     const targetVowels = {
       male: {
         'ㅓ': { f1: 500, f2: 1100 },
