@@ -126,7 +126,7 @@
     .feedback-card { padding: 16px; border: 1px solid rgba(255,255,255,.15); border-radius: 13px; background: rgba(255,255,255,.06); }
     .feedback-card span { color: #91a097; font-size: 10px; }
     .feedback-card strong { display: block; margin-top: 7px; color: var(--lime); font-size: 14px; }
-    .feedback-metrics { display: flex; gap: 22px; margin-top: 17px; color: #91a097; font: 500 10px "DM Mono", monospace; }
+    .feedback-metrics { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 17px; color: #91a097; font: 500 10px "DM Mono", monospace; }
     .feedback-metrics b { color: #fff; font-weight: 500; }
     .record-button { align-self: flex-start; margin-top: 24px; padding: 13px 17px; border: 0; border-radius: 999px; background: var(--coral); color: #fff; font-size: 12px; font-weight: 800; }
     .record-button.recording { background: #fff; color: var(--ink); }
@@ -305,10 +305,10 @@
         <div class="practice-feedback">
           <div class="section-kicker mono">live feedback</div>
           <h3>말하고,<br /><em>바로</em> 확인해요.</h3>
-          <p>녹음된 음성에서 F1·F2를 추출하고, 선택한 성별의 평균과 허용 범위와 비교해 다음 발음에서 바꿀 방향을 알려줍니다.</p>
+          <p>녹음된 음성에서 F1·F2·F3를 추출하고, 선택한 성별의 허용 범위와 비교해 다음 발음에서 바꿀 방향을 알려줍니다.</p>
           <div class="feedback-card"><span>현재 피드백</span><strong id="feedbackText">녹음 후 분석 결과가 표시됩니다.</strong></div>
-          <div class="feedback-metrics"><span>F1 <b id="f1Value">분석 대기</b></span><span>F2 <b id="f2Value">분석 대기</b></span></div>
-          <div class="target-reference" id="targetReference">남성 · ㅓ 목표 F1 521 (480–562) / F2 904 (822–985) Hz</div>
+          <div class="feedback-metrics"><span>F1 <b id="f1Value">분석 대기</b></span><span>F2 <b id="f2Value">분석 대기</b></span><span>F3 <b id="f3Value">분석 대기</b></span></div>
+          <div class="target-reference" id="targetReference">남성 · ㅓ 기준 F1 480–684 / F2 822–1231 / F3 2493–2836 Hz</div>
           <button class="record-button" id="recordButton" disabled>완료 · 분석하기</button>
           <div class="practice-note">녹음이 끝나면 완료를 눌러 목표 모음과의 거리를 분석합니다.</div>
         </div>
@@ -400,7 +400,7 @@
     const micOrb = document.getElementById('micOrb');
     const audioHint = document.getElementById('audioHint');
     const vowelSelect = document.getElementById('vowelSelect');
-    const targetReference = document.getElementById('targetReference');
+    const f3Value = document.getElementById('f3Value');
     const feedbackText = document.getElementById('feedbackText');
     const f1Value = document.getElementById('f1Value');
     const f2Value = document.getElementById('f2Value');
@@ -408,12 +408,12 @@
     const profileLabels = { male: '남성', female: '여성' };
     const targetVowels = {
       male: {
-        'ㅓ': { f1: { mean: 521, sd: 41, range: [480, 562] }, f2: { mean: 904, sd: 81, range: [822, 985] } },
-        'ㅗ': { f1: { mean: 318, sd: 39, range: [279, 356] }, f2: { mean: 691, sd: 104, range: [588, 795] } }
+        'ㅓ': { f1: { range: [480, 684] }, f2: { range: [822, 1231] }, f3: { range: [2493, 2836] } },
+        'ㅗ': { f1: { range: [279, 500] }, f2: { range: [588, 1079] }, f3: { range: [2346, 2830] } }
       },
       female: {
-        'ㅓ': { f1: { mean: 660, sd: 90, range: [569, 750] }, f2: { mean: 1183, sd: 151, range: [1032, 1333] } },
-        'ㅗ': { f1: { mean: 337, sd: 42, range: [295, 379] }, f2: { mean: 687, sd: 104, range: [583, 791] } }
+        'ㅓ': { f1: { range: [569, 890] }, f2: { range: [1032, 1479] }, f3: { range: [2760, 3192] } },
+        'ㅗ': { f1: { range: [296, 559] }, f2: { range: [582, 1172] }, f3: { range: [2451, 3227] } }
       }
     };
     let selectedProfile = 'male';
@@ -429,13 +429,14 @@
       const target = getTarget();
       const profileLabel = profileLabels[selectedProfile];
       audioHint.textContent = `${profileLabel} · 목표 모음 /${vowelSelect.value}/를 한 번 길게 발음해 보세요.`;
-      targetReference.textContent = `${profileLabel} · ${vowelSelect.value} 목표 F1 ${target.f1.mean} (${target.f1.range[0]}–${target.f1.range[1]}) / F2 ${target.f2.mean} (${target.f2.range[0]}–${target.f2.range[1]}) Hz`;
+      targetReference.textContent = `${profileLabel} · ${vowelSelect.value} 기준 F1 ${target.f1.range[0]}–${target.f1.range[1]} / F2 ${target.f2.range[0]}–${target.f2.range[1]} / F3 ${target.f3.range[0]}–${target.f3.range[1]} Hz`;
     }
 
     function resetAnalysis() {
       feedbackText.textContent = '녹음 후 분석 결과가 표시됩니다.';
       f1Value.textContent = '분석 대기';
       f2Value.textContent = '분석 대기';
+      f3Value.textContent = '분석 대기';
       recordButton.disabled = true;
       recordButton.classList.remove('ready');
       if (recordedBlob) {
@@ -533,9 +534,10 @@
       const start = Math.max(0, Math.floor(source.length / 2 - length / 2));
       const samples = source.slice(start, start + length);
       const f1 = findPeak(samples, buffer.sampleRate, 250, 1000);
-      const f2 = findPeak(samples, buffer.sampleRate, 900, 3000);
+      const f2 = findPeak(samples, buffer.sampleRate, 900, 1800);
+      const f3 = findPeak(samples, buffer.sampleRate, 1800, 3800);
       await context.close();
-      return { f1, f2 };
+      return { f1, f2, f3 };
     }
 
     recordButton.addEventListener('click', async () => {
@@ -544,21 +546,26 @@
       feedbackText.textContent = '음성값을 분석하고 있습니다...';
       f1Value.textContent = '측정 중';
       f2Value.textContent = '측정 중';
+      f3Value.textContent = '측정 중';
       try {
-        const { f1, f2 } = await estimateFormants(recordedBlob);
+        const { f1, f2, f3 } = await estimateFormants(recordedBlob);
         f1Value.textContent = `${f1} Hz`;
         f2Value.textContent = `${f2} Hz`;
+        f3Value.textContent = `${f3} Hz`;
         const target = getTarget();
         const feedback = [];
         if (f1 < target.f1.range[0]) feedback.push('입을 조금 더 벌리고 혀를 낮춰 보세요.');
         if (f1 > target.f1.range[1]) feedback.push('입을 조금 덜 벌리고 오므려 보세요.');
         if (f2 < target.f2.range[0]) feedback.push('혀를 조금 더 앞으로 이동해 보세요.');
         if (f2 > target.f2.range[1]) feedback.push('혀를 조금 뒤로 이동해 보세요.');
+        if (f3 < target.f3.range[0]) feedback.push('입술을 조금 덜 둥글게 해 보세요.');
+        if (f3 > target.f3.range[1]) feedback.push('입술을 조금 더 둥글게 해 보세요.');
         feedbackText.textContent = feedback.join(' ') || '목표 모음에 가까워요. 같은 위치를 유지해 보세요.';
       } catch (error) {
         feedbackText.textContent = '녹음이 짧거나 불안정합니다. 다시 녹음해 주세요.';
         f1Value.textContent = '분석 실패';
         f2Value.textContent = '분석 실패';
+        f3Value.textContent = '분석 실패';
       } finally {
         recordButton.disabled = false;
       }
