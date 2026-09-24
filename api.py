@@ -45,14 +45,16 @@ app.add_middleware(
 
 def _read_formant_rows(path: str) -> dict[str, int] | None:
     values: list[tuple[float, float, float]] = []
-    tokens = Path(path).read_text(encoding="utf-8").split()
-    for index in range(0, len(tokens) - 2, 3):
-        try:
-            row = tuple(float(value) for value in tokens[index:index + 3])
-        except ValueError:
-            continue
-        if all(math.isfinite(value) and value > 0 for value in row):
-            values.append(row)
+    lines = Path(path).read_text(encoding="utf-8").splitlines()
+    for line in lines:
+        tokens = line.split()
+        for index in range(0, len(tokens) - 2, 3):
+            try:
+                row = tuple(float(value) for value in tokens[index:index + 3])
+            except ValueError:
+                continue
+            if all(math.isfinite(value) and value > 0 for value in row):
+                values.append(row)
     if not values:
         return None
     return {

@@ -497,7 +497,14 @@
         return;
       }
       try {
-        microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        microphoneStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: { ideal: 1 },
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false
+          }
+        });
         recorder = new MediaRecorder(microphoneStream);
         const chunks = [];
         recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
