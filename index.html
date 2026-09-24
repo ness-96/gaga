@@ -306,13 +306,13 @@
         <div class="practice-feedback">
           <div class="section-kicker mono">live feedback</div>
           <h3>말하고,<br /><em>바로</em> 확인해요.</h3>
-          <p>녹음된 음성에서 F1·F2·F3를 추출하고, 선택한 성별의 허용 범위와 비교해 다음 발음에서 바꿀 방향을 알려줍니다.</p>
+          <p>Praat의 F1·F2·F3와 로컬 한국어 STT를 함께 사용해, 한국인 화자 중심 범위에 얼마나 가까운지 확인하고 다음 발음 방향을 알려줍니다.</p>
           <div class="feedback-card"><span>현재 피드백</span><strong id="feedbackText">녹음 후 분석 결과가 표시됩니다.</strong></div>
           <div class="metrics-title mono">내 목소리 포먼트 값</div>
           <div class="feedback-metrics"><span>F1 <b id="f1Value">분석 대기</b></span><span>F2 <b id="f2Value">분석 대기</b></span><span>F3 <b id="f3Value">분석 대기</b></span></div>
-          <div class="target-reference" id="targetReference">남성 · ㅓ 기준 F1 480–684 / F2 822–1231 / F3 2493–2900 Hz</div>
+          <div class="target-reference" id="targetReference">남성 · ㅓ 중심 F1 480–563 / F2 822–985 / F3 2561–2836 Hz</div>
           <button class="record-button" id="recordButton" disabled>완료 · 분석하기</button>
-          <div class="practice-note">녹음이 끝나면 완료를 눌러 목표 모음과의 거리를 분석합니다.</div>
+          <div class="practice-note">녹음이 끝나면 완료를 눌러 중심 범위와 로컬 STT를 함께 분석합니다.</div>
         </div>
       </div>
     </section>
@@ -410,11 +410,11 @@
     const profileLabels = { male: '남성', female: '여성' };
     const targetVowels = {
       male: {
-        'ㅓ': { f1: { range: [439, 604] }, f2: { range: [741, 1067] }, f3: { range: [2424, 2973] } },
+        'ㅓ': { f1: { range: [480, 563], softRange: [460, 583] }, f2: { range: [822, 985], softRange: [782, 1026] }, f3: { range: [2561, 2836], softRange: [2493, 2904] } },
         'ㅗ': { f1: { range: [279, 500] }, f2: { range: [588, 1079] }, f3: { range: [2346, 2900] } }
       },
       female: {
-        'ㅓ': { f1: { range: [479, 841] }, f2: { range: [882, 1484] }, f3: { range: [2588, 3277] } },
+        'ㅓ': { f1: { range: [569, 750], softRange: [524, 795] }, f2: { range: [1032, 1333], softRange: [957, 1408] }, f3: { range: [2760, 3105], softRange: [2674, 3191] } },
         'ㅗ': { f1: { range: [296, 559] }, f2: { range: [582, 1172] }, f3: { range: [2451, 3227] } }
       }
     };
@@ -511,7 +511,8 @@
     async function estimateFormants(blob) {
       const body = new FormData();
       body.append('audio', blob, `gaga-${Date.now()}.webm`);
-      const response = await fetch(`${PRAAT_API_URL}/analyze?profile=${encodeURIComponent(selectedProfile)}`, {
+      const params = new URLSearchParams({ profile: selectedProfile, vowel: vowelSelect.value });
+      const response = await fetch(`${PRAAT_API_URL}/analyze?${params}`, {
         method: 'POST',
         body
       });
@@ -530,24 +531,46 @@
       f2Value.textContent = '측정 중';
       f3Value.textContent = '측정 중';
       try {
-        const { f1, f2, f3 } = await estimateFormants(recordedBlob);
+        const result = await estimateFormants(recordedBlob);
+        const { f1, f2, f3 } = result;
         f1Value.textContent = `${f1} Hz`;
         f2Value.textContent = `${f2} Hz`;
         f3Value.textContent = `${f3} Hz`;
         const target = getTarget();
         const feedback = [];
-        if (f1 < target.f1.range[0]) feedback.push('입을 조금 더 벌리고 혀를 낮춰 보세요.');
-        if (f1 > target.f1.range[1]) feedback.push('입을 조금 덜 벌리고 오므려 보세요.');
-        if (f2 < target.f2.range[0]) feedback.push('혀를 조금 더 앞으로 이동해 보세요.');
-        if (f2 > target.f2.range[1]) feedback.push('혀를 조금 뒤로 이동해 보세요.');
-        if (vowelSelect.value === 'ㅗ') {
-          if (f3 < target.f3.range[0]) feedback.push('입술을 조금 덜 둥글게 해 보세요.');
-          if (f3 > target.f3.range[1]) feedback.push('입술을 조금 더 둥글게 해 보세요.');
+        const targetVowel = vowelSelect.value;
+        const within = (value, range) => value >= range[0] && value <= range[1];
+        const softRange = feature => target[feature].softRange || target[feature].range;
+        const addRangeFeedback = (value, feature, lowMessage, highMessage) => {
+          const ideal = target[feature].range;
+          const soft = softRange(feature);
+          if (value < soft[0]) feedback.push(lowMessage);
+          else if (value > soft[1]) feedback.push(highMessage);
+          else if (value < ideal[0]) feedback.push(`${feature.toUpperCase()}가 중심 범위보다 조금 낮아요.`);
+          else if (value > ideal[1]) feedback.push(`${feature.toUpperCase()}가 중심 범위보다 조금 높아요.`);
+        };
+        addRangeFeedback(f1, 'f1', '입을 조금 더 벌리고 혀를 낮춰 보세요.', '입을 조금 덜 벌리고 오므려 보세요.');
+        addRangeFeedback(f2, 'f2', '혀를 조금 더 앞으로 이동해 보세요.', '혀를 조금 뒤로 이동해 보세요.');
+        if (targetVowel === 'ㅗ') {
+          addRangeFeedback(f3, 'f3', '입술을 조금 덜 둥글게 해 보세요.', '입술을 조금 더 둥글게 해 보세요.');
         }
-        const successMessage = vowelSelect.value === 'ㅗ'
-          ? '잘했어요! 좋아요. F1·F2·F3가 모두 허용 범위 안에 있어요.'
-          : '잘했어요! 좋아요. F1·F2가 허용 범위 안에 있어요.';
-        feedbackText.textContent = feedback.join(' ') || successMessage;
+        if (result.recognized_vowel && result.recognized_vowel !== targetVowel) {
+          feedback.push(`로컬 STT가 ${result.recognized_vowel}에 더 가깝게 인식했어요.`);
+        }
+        const idealPass = within(f1, target.f1.range) && within(f2, target.f2.range);
+        const softPass = within(f1, softRange('f1')) && within(f2, softRange('f2'));
+        const sttPass = !result.recognized_vowel || result.recognized_vowel === targetVowel;
+        const scoreText = Number.isFinite(result.combined_score) ? ` 종합 ${result.combined_score}점.` : '';
+        const successMessage = targetVowel === 'ㅗ'
+          ? `좋아요! F1·F2·F3가 중심 범위에 가까워요.${scoreText}`
+          : `좋아요! F1·F2가 중심 범위에 가까워요.${scoreText}`;
+        if (idealPass && sttPass && (result.combined_score == null || result.combined_score >= 75)) {
+          feedbackText.textContent = successMessage;
+        } else if (softPass && (result.combined_score == null || result.combined_score >= 55)) {
+          feedbackText.textContent = `${feedback.join(' ') || '거의 맞아요. 중심 범위에 조금 더 가까이 조정해 보세요.'}${scoreText}`;
+        } else {
+          feedbackText.textContent = `${feedback.join(' ') || '목표 모음에서 조금 벗어났어요. 다시 한 번 길게 발음해 보세요.'}${scoreText}`;
+        }
       } catch (error) {
         feedbackText.textContent = error.message === 'poor-audio-quality'
           ? '음질이 안 좋으니 다시 녹음해 주세요.'

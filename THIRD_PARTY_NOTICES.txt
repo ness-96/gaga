@@ -1,0 +1,27 @@
+Third-party notices for the Gaga Korean analysis service
+
+This service uses the following third-party software and model assets.
+
+Praat
+- Used as an unmodified server-side executable for formant analysis.
+- License: GNU General Public License v3 or later.
+- Source and license: https://praat.org/manual/License.html
+
+Vosk API
+- Python runtime used for local Korean speech recognition.
+- Version: 0.3.45
+- License: Apache License 2.0.
+- Source: https://github.com/alphacep/vosk-api
+
+Vosk Korean model
+- Model: vosk-model-small-ko-0.22
+- License listed by the Vosk project: Apache License 2.0.
+- Model catalog: https://github.com/alphacep/vosk-space/blob/master/models.md
+- Download: https://alphacephei.com/vosk/models/vosk-model-small-ko-0.22.zip
+
+Python dependencies
+- FastAPI: MIT License — https://github.com/fastapi/fastapi
+- Uvicorn: BSD 3-Clause License — https://github.com/encode/uvicorn
+- python-multipart: Apache License 2.0 — https://github.com/Kludex/python-multipart
+
+The Korean model archive is downloaded to the server's ignored models/ directory and is not committed to this repository. Retain this notice and the upstream license texts when redistributing the service or model asset. This notice is not legal advice; review the exact deployed binaries, system packages, and hosting terms before commercial distribution.
