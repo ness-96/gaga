@@ -26,12 +26,12 @@
     "active": true,
     "targets": ["deb", "appimage"],
     "resources": [
-      "../api.py",
-      "../praat_formants.praat",
-      "../run_local_api.sh",
-      "../THIRD_PARTY_NOTICES.txt",
-      "../models",
-      "../.venv"
+      "../../api.py",
+      "../../praat_formants.praat",
+      "../../run_local_api.sh",
+      "../../THIRD_PARTY_NOTICES.txt",
+      "../../models",
+      "../../.venv"
     ],
     "icon": [
       "icons/32x32.png",
