@@ -142,6 +142,10 @@
     .record-button:disabled { cursor: not-allowed; opacity: .42; }
     .record-button.ready { opacity: 1; }
     .practice-note { margin-top: 13px; color: #91a097; font-size: 10px; }
+    .app-next { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 16px; padding: 26px 30px; border: 1px solid var(--line); border-radius: 18px; background: var(--lime); }
+    .app-next h3 { margin: 0 0 6px; font-size: 20px; letter-spacing: -.06em; }
+    .app-next p { margin: 0; color: #596860; font-size: 12px; line-height: 1.6; }
+    .app-next button { flex: 0 0 auto; padding: 13px 17px; border: 0; border-radius: 999px; background: var(--ink); color: #fff; font-size: 12px; font-weight: 800; }
     .marquee { overflow: hidden; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
     .marquee-inner { display: flex; gap: 39px; width: max-content; padding: 19px 0; color: #6f7b74; animation: slide 26s linear infinite; }
     .marquee-item { display: flex; align-items: center; gap: 39px; font-size: 12px; font-weight: 800; }
@@ -223,6 +227,8 @@
       .speaker-card { left: 0; width: 275px; }
       .speaker-visual { height: 157px; }
       .speaker-card .speaker-feedback { font-size: 10px; }
+      .app-next { display: block; padding: 22px; }
+      .app-next button { margin-top: 18px; }
     }
     @media (max-width: 420px) {
       .hero-cta { align-items: flex-start; flex-direction: column; }
@@ -295,21 +301,17 @@
       <div class="section-head">
         <div>
           <div class="section-kicker mono">pronunciation studio</div>
-          <h2>내 목소리로<br />발음해 보세요.</h2>
+          <h2>ㅓ와 ㅗ로<br />시작해 보세요.</h2>
         </div>
-        <p class="section-desc">모음을 선택하고 녹음하면, 음성값을 바탕으로 발음 방향과 조음 피드백을 확인할 수 있습니다.</p>
+        <p class="section-desc">홈페이지에서는 한국어 모음 ㅓ와 ㅗ를 먼저 체험합니다. 녹음 후 음성값을 비교해 다음 발음 방향을 확인해 보세요.</p>
       </div>
       <div class="practice-shell">
         <div class="practice-audio">
           <div class="practice-audio-head"><span>audio practice</span><span class="live-dot"><i></i> microphone ready</span></div>
           <div class="mic-orb" id="micOrb">♩</div>
           <select class="vowel-select" id="vowelSelect" aria-label="목표 모음 선택">
-            <option value="ㅏ">/ㅏ/</option>
             <option value="ㅓ">/ㅓ/</option>
             <option value="ㅗ">/ㅗ/</option>
-            <option value="ㅜ">/ㅜ/</option>
-            <option value="ㅡ">/ㅡ/</option>
-            <option value="ㅣ">/ㅣ/</option>
           </select>
           <div class="audio-hint" id="audioHint">목표 모음을 보고 발음해 보세요.</div>
           <div class="audio-wave" id="audioWave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -327,6 +329,13 @@
         </div>
       </div>
     </section>
+    <div class="wrap app-next" id="appNext">
+      <div>
+        <h3>두 모음 연습을 끝냈다면</h3>
+        <p>다음 모음과 학습 기록은 Gaga Korean 앱에서 계속 이어집니다.</p>
+      </div>
+      <button id="appButton">앱에서 계속 연습하기 ↗</button>
+    </div>
 
     <section class="wrap section" id="program">
       <div class="section-head"><div><div class="section-kicker mono" data-i18n="programKicker">Why Gaga Korean</div><h2 data-i18n="programTitle">한국어를 ‘공부’하는 데서<br />‘사용’하는 사람으로.</h2></div><p class="section-desc" data-i18n="programDesc">목표와 목소리가 모두 다른 만큼, 시작점도 달라야 하니까요.</p></div>
@@ -407,12 +416,8 @@
     const audioHint = document.getElementById('audioHint');
     const vowelSelect = document.getElementById('vowelSelect');
     const targetVowels = {
-      'ㅏ': { f1: 700, f2: 1200 },
       'ㅓ': { f1: 600, f2: 1000 },
-      'ㅗ': { f1: 400, f2: 800 },
-      'ㅜ': { f1: 350, f2: 700 },
-      'ㅡ': { f1: 400, f2: 1500 },
-      'ㅣ': { f1: 300, f2: 2300 }
+      'ㅗ': { f1: 400, f2: 800 }
     };
     vowelSelect.addEventListener('change', () => {
       audioHint.textContent = `목표 모음 /${vowelSelect.value}/를 한 번 길게 발음해 보세요.`;
@@ -527,6 +532,11 @@
       }
     });
     document.getElementById('consultButton').addEventListener('click', () => { toast.textContent = translations[document.documentElement.lang || 'ko'].toast; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 3400); });
+    document.getElementById('appButton').addEventListener('click', () => {
+      toast.textContent = '앱 버전은 준비 중입니다. 홈페이지에서는 ㅓ와 ㅗ를 먼저 연습해 보세요.';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3400);
+    });
     setLanguage(localStorage.getItem('gaga-language') || 'ko');
   </script>
 </body>
