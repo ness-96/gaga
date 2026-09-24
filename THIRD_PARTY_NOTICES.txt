@@ -25,3 +25,8 @@ Python dependencies
 - python-multipart: Apache License 2.0 — https://github.com/Kludex/python-multipart
 
 The Korean model archive is downloaded to the server's ignored models/ directory and is not committed to this repository. Retain this notice and the upstream license texts when redistributing the service or model asset. This notice is not legal advice; review the exact deployed binaries, system packages, and hosting terms before commercial distribution.
+
+Hosting-plan note
+- The current Vercel deployment and Tailscale Funnel are development infrastructure.
+- Vercel Hobby and Tailscale Personal terms may restrict commercial use.
+- Before a paid launch, use plans whose terms permit commercial use or move the frontend/API to self-managed commercial infrastructure with HTTPS and a suitable domain.
