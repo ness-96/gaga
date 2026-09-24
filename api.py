@@ -108,15 +108,34 @@ def _recognize_vowel(path: str, target: str) -> dict[str, object]:
     }
 
 
-def _score_formants(measured: dict[str, int], profile: str, vowel: str) -> int | None:
-    reference = FORMANT_REFERENCE.get(profile, {}).get(vowel)
-    if reference is None:
-        return None
-    distance = math.sqrt(sum(
-        ((measured[key] - mean) / standard_deviation) ** 2
-        for key, (mean, standard_deviation) in reference.items()
-    ))
-    return max(0, round(100 * math.exp(-0.25 * distance**2)))
+def _formant_assessment(measured: dict[str, int], profile: str, target: str) -> dict[str, object]:
+    references = FORMANT_REFERENCE.get(profile, {})
+    distances = {
+        vowel: math.sqrt(sum(
+            ((measured[key] - mean) / standard_deviation) ** 2
+            for key, (mean, standard_deviation) in reference.items()
+        ))
+        for vowel, reference in references.items()
+    }
+    target_distance = distances.get(target)
+    if target_distance is None:
+        return {
+            "acoustic_score": None,
+            "target_distance": None,
+            "alternate_distance": None,
+            "closest_vowel": None,
+            "vowel_margin": None,
+        }
+    closest_vowel = min(distances, key=distances.get)
+    alternate_distances = [distance for vowel, distance in distances.items() if vowel != target]
+    alternate_distance = min(alternate_distances) if alternate_distances else None
+    return {
+        "acoustic_score": max(0, round(100 * math.exp(-0.25 * target_distance**2))),
+        "target_distance": round(target_distance, 3),
+        "alternate_distance": round(alternate_distance, 3) if alternate_distance is not None else None,
+        "closest_vowel": closest_vowel,
+        "vowel_margin": round(alternate_distance - target_distance, 3) if alternate_distance is not None else None,
+    }
 
 
 def _combine_scores(acoustic_score: int | None, stt_score: int | None) -> dict[str, object]:
@@ -205,14 +224,14 @@ async def analyze_audio(
             raise HTTPException(status_code=422, detail="poor-audio-quality")
 
         stt = _recognize_vowel(recognition_path, vowel)
-        acoustic_score = _score_formants(measured, profile, vowel)
-        combined = _combine_scores(acoustic_score, stt["stt_score"])
+        acoustic = _formant_assessment(measured, profile, vowel)
+        combined = _combine_scores(acoustic["acoustic_score"], stt["stt_score"])
         return {
             "analyzer": "praat+vosk-local",
             "profile": profile,
             "target_vowel": vowel,
             **measured,
-            "acoustic_score": acoustic_score,
+            **acoustic,
             **stt,
             **combined,
         }

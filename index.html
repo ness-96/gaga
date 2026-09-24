@@ -313,6 +313,7 @@
           <div class="target-reference" id="targetReference">남성 · ㅓ 중심 F1 480–563 / F2 822–985 / F3 2561–2836 Hz</div>
           <button class="record-button" id="recordButton" disabled>완료 · 분석하기</button>
           <div class="practice-note">녹음이 끝나면 완료를 눌러 중심 범위와 로컬 STT를 함께 분석합니다.</div>
+          <div class="practice-note" id="analysisProgress">같은 모음을 3회 녹음하면 더 안정적인 평균 결과를 보여줍니다. 현재 0/3회.</div>
         </div>
       </div>
     </section>
@@ -402,10 +403,11 @@
     const micOrb = document.getElementById('micOrb');
     const audioHint = document.getElementById('audioHint');
     const vowelSelect = document.getElementById('vowelSelect');
-    const f3Value = document.getElementById('f3Value');
     const feedbackText = document.getElementById('feedbackText');
+    const analysisProgress = document.getElementById('analysisProgress');
     const f1Value = document.getElementById('f1Value');
     const f2Value = document.getElementById('f2Value');
+    const f3Value = document.getElementById('f3Value');
     const voiceProfileInputs = [...document.querySelectorAll('input[name="voiceProfile"]')];
     const profileLabels = { male: '남성', female: '여성' };
     const targetVowels = {
@@ -422,6 +424,9 @@
     let recorder;
     let microphoneStream;
     let recordedBlob;
+    let recordingNumber = 0;
+    let lastAnalyzedRecording = 0;
+    let analysisSamples = [];
 
     function getTarget() {
       return targetVowels[selectedProfile][vowelSelect.value];
@@ -434,7 +439,19 @@
       targetReference.textContent = `${profileLabel} · ${vowelSelect.value} 기준 F1 ${target.f1.range[0]}–${target.f1.range[1]} / F2 ${target.f2.range[0]}–${target.f2.range[1]} / F3 ${target.f3.range[0]}–${target.f3.range[1]} Hz`;
     }
 
+    function updateAnalysisProgress() {
+      const count = analysisSamples.length;
+      analysisProgress.textContent = count < 3
+        ? `같은 모음을 3회 녹음하면 더 안정적인 평균 결과를 보여줍니다. 현재 ${count}/3회.`
+        : `${count}회 측정 완료. 같은 모음의 평균과 발음 일관성을 반영했습니다.`;
+    }
+
+
     function resetAnalysis() {
+      analysisSamples = [];
+      recordingNumber = 0;
+      lastAnalyzedRecording = 0;
+      updateAnalysisProgress();
       feedbackText.textContent = '녹음 후 분석 결과가 표시됩니다.';
       f1Value.textContent = '분석 대기';
       f2Value.textContent = '분석 대기';
@@ -485,6 +502,7 @@
         const chunks = [];
         recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
         recorder.onstop = () => {
+          recordingNumber += 1;
           recordedBlob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
           audioPlayer.src = URL.createObjectURL(recordedBlob);
           audioPlayer.classList.add('visible');
@@ -492,7 +510,7 @@
           microphoneStream?.getTracks().forEach(track => track.stop());
           recordButton.textContent = '다시 분석하기';
           audioHint.textContent = `${profileLabels[selectedProfile]} · 녹음 완료. 포먼트 값을 분석하고 있습니다.`;
-          analyzeRecordedBlob();
+          analyzeRecordedBlob(recordingNumber);
         };
         recorder.start();
         setPracticeControlsDisabled(true);
@@ -525,7 +543,7 @@
       if (![result.f1, result.f2, result.f3].every(Number.isFinite)) throw new Error('formant-analysis-failed');
       return result;
     }
-    async function analyzeRecordedBlob() {
+    async function analyzeRecordedBlob(recordingId = recordingNumber) {
       if (!recordedBlob) return;
       recordButton.disabled = true;
       audioRecordButton.disabled = true;
@@ -536,10 +554,25 @@
       f3Value.textContent = '측정 중';
       try {
         const result = await estimateFormants(recordedBlob);
-        const { f1, f2, f3 } = result;
-        f1Value.textContent = `${f1} Hz`;
-        f2Value.textContent = `${f2} Hz`;
-        f3Value.textContent = `${f3} Hz`;
+        if (recordingId !== lastAnalyzedRecording) {
+          analysisSamples.push(result);
+          lastAnalyzedRecording = recordingId;
+          updateAnalysisProgress();
+        }
+        const samples = analysisSamples;
+        const mean = key => samples.reduce((sum, sample) => sum + sample[key], 0) / samples.length;
+        const finiteMean = key => {
+          const values = samples.map(sample => sample[key]).filter(Number.isFinite);
+          return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+        };
+        const spread = key => Math.max(...samples.map(sample => sample[key])) - Math.min(...samples.map(sample => sample[key]));
+        const displayed = samples.length >= 3
+          ? { f1: Math.round(mean('f1')), f2: Math.round(mean('f2')), f3: Math.round(mean('f3')) }
+          : result;
+        const { f1, f2, f3 } = displayed;
+        f1Value.textContent = `${f1} Hz${samples.length >= 3 ? ' · 평균' : ''}`;
+        f2Value.textContent = `${f2} Hz${samples.length >= 3 ? ' · 평균' : ''}`;
+        f3Value.textContent = `${f3} Hz${samples.length >= 3 ? ' · 평균' : ''}`;
         const target = getTarget();
         const feedback = [];
         const targetVowel = vowelSelect.value;
@@ -558,22 +591,42 @@
         if (targetVowel === 'ㅗ') {
           addRangeFeedback(f3, 'f3', '입술을 조금 덜 둥글게 해 보세요.', '입술을 조금 더 둥글게 해 보세요.');
         }
-        if (result.recognized_vowel && result.recognized_vowel !== targetVowel) {
-          feedback.push(`로컬 STT가 ${result.recognized_vowel}에 더 가깝게 인식했어요.`);
+        if (result.closest_vowel && result.closest_vowel !== targetVowel) {
+          feedback.push(`음향상 ${result.closest_vowel}에 더 가까워요.`);
         }
-        const idealPass = within(f1, target.f1.range) && within(f2, target.f2.range);
+        if (result.recognized_vowel && result.recognized_vowel !== targetVowel) {
+          feedback.push(`로컬 STT도 ${result.recognized_vowel}에 더 가깝게 인식했어요.`);
+        }
         const softPass = within(f1, softRange('f1')) && within(f2, softRange('f2'));
-        const sttPass = !result.recognized_vowel || result.recognized_vowel === targetVowel;
-        const scoreText = Number.isFinite(result.combined_score) ? ` 종합 ${result.combined_score}점.` : '';
+        const averageTargetDistance = finiteMean('target_distance');
+        const averageAlternateDistance = finiteMean('alternate_distance');
+        const relativePass = averageTargetDistance != null &&
+          averageAlternateDistance != null &&
+          averageTargetDistance < averageAlternateDistance &&
+          averageTargetDistance <= 2.5;
+        const targetClosestCount = samples.filter(sample => sample.closest_vowel === targetVowel).length;
+        const sttTargetCount = samples.filter(sample => !sample.recognized_vowel || sample.recognized_vowel === targetVowel).length;
+        const stable = samples.length < 3 || (spread('f1') <= 120 && spread('f2') <= 220);
+        const scoreSamples = samples.map(sample => sample.combined_score).filter(Number.isFinite);
+        const summaryScore = scoreSamples.length
+          ? Math.round(scoreSamples.reduce((sum, score) => sum + score, 0) / scoreSamples.length)
+          : null;
+        const scoreText = Number.isFinite(summaryScore) ? ` 종합 ${summaryScore}점.` : '';
         const successMessage = targetVowel === 'ㅗ'
-          ? `좋아요! F1·F2·F3가 중심 범위에 가까워요.${scoreText}`
-          : `좋아요! F1·F2가 중심 범위에 가까워요.${scoreText}`;
-        if (idealPass && sttPass && (result.combined_score == null || result.combined_score >= 75)) {
+          ? `좋아요! 3회 평균이 ㅗ 쪽 상대거리에서 안정적이에요.${scoreText}`
+          : `좋아요! 3회 평균이 ㅓ 쪽 상대거리에서 안정적이에요.${scoreText}`;
+        if (samples.length < 3) {
+          feedbackText.textContent = `${feedback.join(' ') || '현재 측정은 안정적입니다.'} 같은 모음을 ${3 - samples.length}회 더 녹음해 주세요.`;
+        } else if (relativePass && stable && targetClosestCount >= 2 && sttTargetCount >= 2 && summaryScore >= 75) {
           feedbackText.textContent = successMessage;
-        } else if (softPass && (result.combined_score == null || result.combined_score >= 55)) {
-          feedbackText.textContent = `${feedback.join(' ') || '거의 맞아요. 중심 범위에 조금 더 가까이 조정해 보세요.'}${scoreText}`;
+        } else if (relativePass && stable && targetClosestCount >= 2 && summaryScore >= 55) {
+          feedbackText.textContent = `${feedback.join(' ') || '거의 맞아요. 목표 모음 쪽 상대거리를 더 좁혀 보세요.'} 3회 평균 기준입니다.${scoreText}`;
+        } else if (targetClosestCount < 2) {
+          feedbackText.textContent = `${feedback.join(' ') || `3회 중 ${targetClosestCount}회만 ${targetVowel}에 가까웠어요.`} 같은 모음을 다시 3회 녹음해 보세요.${scoreText}`;
+        } else if (!stable) {
+          feedbackText.textContent = `발음 편차가 커요. 같은 크기와 길이로 3회 다시 녹음해 보세요.${scoreText}`;
         } else {
-          feedbackText.textContent = `${feedback.join(' ') || '목표 모음에서 조금 벗어났어요. 다시 한 번 길게 발음해 보세요.'}${scoreText}`;
+          feedbackText.textContent = `${feedback.join(' ') || '목표 모음에서 조금 벗어났어요.'} 3회 평균 기준입니다.${scoreText}`;
         }
       } catch (error) {
         feedbackText.textContent = error.message === 'poor-audio-quality'
@@ -589,7 +642,7 @@
       }
     }
 
-    recordButton.addEventListener('click', analyzeRecordedBlob);
+    recordButton.addEventListener('click', () => analyzeRecordedBlob(recordingNumber));
     document.getElementById('consultButton').addEventListener('click', () => { toast.textContent = translations[document.documentElement.lang || 'ko'].toast; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 3400); });
     document.getElementById('appButton').addEventListener('click', () => {
       toast.textContent = '앱 버전은 준비 중입니다. 홈페이지에서는 ㅓ와 ㅗ를 먼저 연습해 보세요.';
